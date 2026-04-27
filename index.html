@@ -13,9 +13,7 @@
       --ink: #101726;
       --muted: rgba(16, 23, 38, 0.62);
       --panel: rgba(255, 255, 255, 0.18);
-      --panel-strong: rgba(255, 255, 255, 0.34);
-      --panel-dark: rgba(22, 26, 35, 0.3);
-      --line: rgba(255, 255, 255, 0.34);
+      --line: rgba(255, 255, 255, 0.3);
       --shadow: 0 24px 70px rgba(56, 84, 145, 0.18);
       --shadow-soft: 0 10px 30px rgba(35, 54, 98, 0.14);
       --blue: #2f7bff;
@@ -43,8 +41,6 @@
         --ink: #f5f7ff;
         --muted: rgba(245, 247, 255, 0.68);
         --panel: rgba(22, 27, 38, 0.34);
-        --panel-strong: rgba(31, 38, 54, 0.56);
-        --panel-dark: rgba(9, 11, 17, 0.58);
         --line: rgba(255, 255, 255, 0.12);
         --shadow: 0 24px 90px rgba(0, 0, 0, 0.4);
         --shadow-soft: 0 10px 34px rgba(0, 0, 0, 0.28);
@@ -57,19 +53,30 @@
       }
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-    html, body {
-      margin: 0;
-      min-height: 100%;
-      font-family: "SF Pro Display", "SF Pro Text", "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+    html {
+      height: 100%;
+      overflow: auto;
       background:
         radial-gradient(circle at 12% 18%, rgba(84, 212, 255, 0.16), transparent 30%),
         radial-gradient(circle at 88% 14%, rgba(47, 123, 255, 0.18), transparent 32%),
         radial-gradient(circle at 55% 100%, rgba(255, 255, 255, 0.44), transparent 35%),
         linear-gradient(180deg, var(--bg0), var(--bg1) 50%, var(--bg2));
+    }
+
+    body {
+      margin: 0;
+      min-height: 100%;
+      min-height: 100dvh;
+      font-family: "SF Pro Display", "SF Pro Text", "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
       color: var(--ink);
-      overflow: hidden;
+      overflow: auto;
+      overscroll-behavior-y: none;
+      background: transparent;
     }
 
     body::before,
@@ -115,7 +122,7 @@
     .app {
       position: relative;
       z-index: 2;
-      min-height: 100vh;
+      min-height: 100dvh;
       padding: calc(var(--safe-top) + 18px) 16px calc(var(--safe-bottom) + 20px);
       display: flex;
       justify-content: center;
@@ -125,7 +132,8 @@
     .shell {
       position: relative;
       width: min(1100px, 100%);
-      min-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 38px);
+      min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 38px);
+      height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 38px);
       border-radius: 40px;
       background:
         linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08)),
@@ -173,7 +181,9 @@
       pointer-events: none;
     }
 
-    .topbar > * { pointer-events: auto; }
+    .topbar > * {
+      pointer-events: auto;
+    }
 
     .capsule, .glass, .chip, .metric, .mode-card, .word-card, .browser-card, .overlay-card {
       background:
@@ -224,8 +234,6 @@
       transition: transform .25s var(--ease-ios), background .25s ease;
     }
 
-    .theme-toggle:active { transform: scale(0.94); }
-
     .theme-toggle::before {
       content: "";
       position: absolute;
@@ -237,12 +245,14 @@
       transition: transform .32s var(--ease-spring);
     }
 
-    body[data-theme="dark"] .theme-toggle::before { transform: translateX(20px); }
-    body[data-theme="dark"] .theme-toggle { background: rgba(88,166,255,0.22); }
+    body[data-theme="dark"] .theme-toggle::before {
+      transform: translateX(20px);
+    }
 
     .screens {
       position: relative;
-      min-height: inherit;
+      height: 100%;
+      min-height: 0;
       overflow: hidden;
     }
 
@@ -250,8 +260,6 @@
       position: absolute;
       inset: 0;
       padding: 92px 20px 24px;
-      display: grid;
-      grid-template-rows: 1fr;
       opacity: 0;
       visibility: hidden;
       transform: translateX(28px) scale(0.98);
@@ -262,6 +270,11 @@
         filter .6s ease,
         visibility 0s linear .6s;
       z-index: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      min-height: 0;
     }
 
     .screen.active {
@@ -279,12 +292,17 @@
       filter: blur(10px);
     }
 
-    .stack {
-      display: grid;
-      align-content: center;
-      gap: 18px;
+    .stack, .browser-layout, .game-layout {
       width: min(920px, 100%);
       margin: 0 auto;
+      min-height: 100%;
+    }
+
+    .stack {
+      display: grid;
+      align-content: start;
+      gap: 18px;
+      padding-bottom: 8px;
     }
 
     .hero {
@@ -315,7 +333,6 @@
     .logo-orb::after {
       content: "";
       position: absolute;
-      inset: auto;
       border-radius: 50%;
       filter: blur(6px);
     }
@@ -342,11 +359,34 @@
       50% { transform: translateY(-10px) rotate(3deg); }
     }
 
-    h1, h2, h3, p { margin: 0; }
-    h1 { font-size: clamp(2.2rem, 5vw, 4.4rem); line-height: 0.95; letter-spacing: -0.05em; }
-    h2 { font-size: clamp(1.5rem, 3.4vw, 2.4rem); line-height: 1.05; letter-spacing: -0.04em; }
-    h3 { font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.2; }
-    .lead { color: var(--muted); font-size: clamp(1rem, 2vw, 1.18rem); line-height: 1.55; max-width: 680px; margin: 0 auto; }
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 4.4rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+    }
+
+    h2 {
+      font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    h3 {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      line-height: 1.2;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: clamp(1rem, 2vw, 1.18rem);
+      line-height: 1.55;
+      max-width: 680px;
+      margin: 0 auto;
+    }
 
     .actions, .grid-actions, .hud-actions, .answer-actions {
       display: flex;
@@ -381,6 +421,7 @@
       overflow: hidden;
       isolation: isolate;
       user-select: none;
+      touch-action: manipulation;
     }
 
     .btn::before {
@@ -408,9 +449,18 @@
       pointer-events: none;
     }
 
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 18px 34px rgba(31,45,76,0.18); }
-    .btn:active { transform: scale(0.96); }
-    .btn.pressed::after { animation: ripple .7s ease-out; }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 34px rgba(31,45,76,0.18);
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn.pressed::after {
+      animation: ripple .7s ease-out;
+    }
 
     @keyframes ripple {
       0% { opacity: 0.65; transform: translate(-50%, -50%) scale(0); }
@@ -422,39 +472,18 @@
         linear-gradient(180deg, rgba(84,212,255,0.48), rgba(47,123,255,0.54)),
         radial-gradient(circle at 20% 0%, rgba(255,255,255,0.54), transparent 45%);
       color: white;
-      border-color: rgba(255,255,255,0.26);
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,0.34),
         0 18px 36px rgba(47,123,255,0.32),
         0 0 32px rgba(84,212,255,0.16);
     }
 
-    .btn.success {
-      background:
-        linear-gradient(180deg, rgba(63, 228, 145, 0.5), rgba(50, 213, 124, 0.6));
-      color: white;
-    }
-
-    .btn.danger {
-      background:
-        linear-gradient(180deg, rgba(255, 126, 145, 0.44), rgba(255, 93, 113, 0.56));
-      color: white;
-    }
-
-    .btn.warn {
-      background:
-        linear-gradient(180deg, rgba(255, 216, 111, 0.42), rgba(255, 159, 67, 0.52));
-      color: #44260b;
-    }
-
-    .btn.ghost {
-      background: rgba(255,255,255,0.08);
-      color: var(--muted);
-    }
-
-    .btn.block { width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 10px; }
+    .btn.success { background: linear-gradient(180deg, rgba(63, 228, 145, 0.5), rgba(50, 213, 124, 0.6)); color: white; }
+    .btn.danger { background: linear-gradient(180deg, rgba(255, 126, 145, 0.44), rgba(255, 93, 113, 0.56)); color: white; }
+    .btn.warn { background: linear-gradient(180deg, rgba(255, 216, 111, 0.42), rgba(255, 159, 67, 0.52)); color: #44260b; }
+    .btn.ghost { background: rgba(255,255,255,0.08); color: var(--muted); }
+    .btn.block { width: 100%; display: inline-flex; justify-content: center; align-items: center; gap: 10px; }
     .btn.small { min-height: 44px; padding: 10px 16px; font-size: 0.95rem; }
-    .btn .sub { display: block; font-size: 12px; color: rgba(255,255,255,0.84); font-weight: 500; }
 
     .metrics {
       display: grid;
@@ -468,11 +497,13 @@
       min-height: 102px;
       display: grid;
       align-content: space-between;
-      transform-style: preserve-3d;
       transition: transform .25s var(--ease-ios), box-shadow .25s ease;
+      transform-style: preserve-3d;
     }
 
-    .metric:hover { transform: translateY(-4px) rotateX(4deg); }
+    .metric:hover {
+      transform: translateY(-4px) rotateX(4deg);
+    }
 
     .metric .label {
       color: var(--muted);
@@ -522,10 +553,12 @@
       margin-bottom: 16px;
     }
 
-    .mode-card p, .browser-card p { color: var(--muted); line-height: 1.45; }
+    .mode-card p, .browser-card p {
+      color: var(--muted);
+      line-height: 1.45;
+    }
 
     .mode-card .shine, .word-card .shine, .browser-card .shine, .overlay-card .shine {
-      content: "";
       position: absolute;
       inset: 0;
       background: radial-gradient(circle at var(--pointer-x) var(--pointer-y), rgba(255,255,255,0.22), transparent 28%);
@@ -588,12 +621,11 @@
     }
 
     .game-layout {
-      width: min(1000px, 100%);
-      margin: 0 auto;
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto auto auto;
       gap: 16px;
-      align-content: stretch;
+      align-content: start;
+      width: min(1000px, 100%);
     }
 
     .hud {
@@ -609,7 +641,6 @@
       display: grid;
       gap: 6px;
       align-content: center;
-      transition: transform .2s ease;
     }
 
     .chip strong {
@@ -646,7 +677,7 @@
     .word-card {
       position: relative;
       width: min(760px, 100%);
-      min-height: clamp(340px, 48vh, 500px);
+      min-height: clamp(320px, 42dvh, 500px);
       border-radius: 38px;
       padding: clamp(22px, 4vw, 34px);
       display: grid;
@@ -657,9 +688,7 @@
       transform-style: preserve-3d;
     }
 
-    .word-card.entering {
-      animation: cardIn .55s var(--ease-ios);
-    }
+    .word-card.entering { animation: cardIn .55s var(--ease-ios); }
 
     @keyframes cardIn {
       from { transform: translateY(16px) scale(0.97); filter: blur(10px); opacity: 0; }
@@ -672,17 +701,17 @@
       box-shadow: 0 0 0 1px rgba(50,213,124,0.22), 0 0 46px rgba(50,213,124,0.2), var(--shadow-soft);
     }
 
+    .word-card.wrong {
+      animation: shake .45s ease;
+      border-color: rgba(255,93,113,0.5);
+      box-shadow: 0 0 0 1px rgba(255,93,113,0.22), 0 0 42px rgba(255,93,113,0.18), var(--shadow-soft);
+    }
+
     @keyframes successBounce {
       0% { transform: scale(1); }
       20% { transform: scale(0.98); }
       45% { transform: scale(1.03); }
       100% { transform: scale(1); }
-    }
-
-    .word-card.wrong {
-      animation: shake .45s ease;
-      border-color: rgba(255,93,113,0.5);
-      box-shadow: 0 0 0 1px rgba(255,93,113,0.22), 0 0 42px rgba(255,93,113,0.18), var(--shadow-soft);
     }
 
     @keyframes shake {
@@ -709,13 +738,14 @@
     }
 
     .word-title {
-      font-size: clamp(2.3rem, 7vw, 5.3rem);
+      font-size: clamp(2rem, 7vw, 5.3rem);
       line-height: 0.98;
       letter-spacing: -0.06em;
       text-align: center;
       margin: auto 0;
       text-wrap: balance;
       text-shadow: 0 10px 34px rgba(31,45,76,0.12);
+      word-break: break-word;
     }
 
     .clue-panel {
@@ -737,8 +767,18 @@
       min-height: 96px;
     }
 
-    .clue strong { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-    .clue div { font-size: 1rem; line-height: 1.5; }
+    .clue strong {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .clue div {
+      font-size: 1rem;
+      line-height: 1.5;
+      word-break: break-word;
+    }
 
     .answer-actions {
       justify-content: space-between;
@@ -746,7 +786,8 @@
       gap: 12px;
     }
 
-    .answer-actions .left, .answer-actions .right {
+    .answer-actions .left,
+    .answer-actions .right {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -762,6 +803,7 @@
       background: rgba(8, 12, 22, 0.22);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+      padding: 20px;
     }
 
     .overlay.visible { display: grid; animation: overlayIn .28s ease; }
@@ -832,11 +874,10 @@
     }
 
     .browser-layout {
-      width: min(1020px, 100%);
-      margin: 0 auto;
       display: grid;
-      grid-template-rows: auto auto 1fr;
+      grid-template-rows: auto auto minmax(0, 1fr);
       gap: 16px;
+      width: min(1020px, 100%);
     }
 
     .searchbar {
@@ -865,8 +906,12 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
       overflow: auto;
-      padding-right: 4px;
       align-content: start;
+      min-height: 0;
+      padding-right: 4px;
+      padding-bottom: 6px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
 
     .browser-card {
@@ -878,6 +923,7 @@
       font-size: 1.4rem;
       letter-spacing: -0.04em;
       margin-bottom: 10px;
+      word-break: break-word;
     }
 
     .browser-card .mini {
@@ -917,7 +963,10 @@
       text-align: center;
     }
 
-    .toast.show { opacity: 1; transform: translateY(0) scale(1); }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
 
     .score-fly {
       position: absolute;
@@ -937,7 +986,9 @@
       100% { opacity: 0; transform: translate(-50%, -78px) scale(1.18); }
     }
 
-    .hidden { display: none !important; }
+    .hidden {
+      display: none !important;
+    }
 
     @media (max-width: 960px) {
       .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -949,16 +1000,40 @@
     }
 
     @media (max-width: 640px) {
-      .screen { padding: 88px 14px 18px; }
-      .shell { min-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 18px); border-radius: 28px; }
-      .shell::after { border-radius: 27px; }
-      .topbar { inset: 12px 12px auto 12px; }
+      .app {
+        padding: 0;
+      }
+
+      .shell {
+        width: 100%;
+        min-height: 100dvh;
+        height: 100dvh;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+      }
+
+      .shell::after {
+        border-radius: 0;
+      }
+
+      .topbar {
+        inset: calc(var(--safe-top) + 10px) 12px auto 12px;
+      }
+
+      .screen {
+        padding: calc(var(--safe-top) + 74px) 14px calc(var(--safe-bottom) + 18px);
+      }
+
       .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .answer-actions { flex-direction: column; align-items: stretch; }
       .answer-actions .left, .answer-actions .right { width: 100%; justify-content: center; }
       .btn.block-mobile { width: 100%; }
-      .word-card { min-height: 420px; padding: 20px; }
+      .word-card { min-height: 400px; padding: 20px; }
       .metrics { grid-template-columns: 1fr 1fr; }
+      .capsule { max-width: 70vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .searchbar input { min-width: 100%; }
+      .score-fly { bottom: 70px; }
     }
   </style>
 </head>
@@ -1002,22 +1077,10 @@
             </div>
 
             <div class="metrics">
-              <div class="metric glass">
-                <div class="label">Vocabulary</div>
-                <div class="value" id="metricWords">100</div>
-              </div>
-              <div class="metric glass">
-                <div class="label">High Score</div>
-                <div class="value" id="metricHigh">0</div>
-              </div>
-              <div class="metric glass">
-                <div class="label">Played</div>
-                <div class="value" id="metricPlayed">0</div>
-              </div>
-              <div class="metric glass">
-                <div class="label">Last Winner</div>
-                <div class="value" id="metricWinner">-</div>
-              </div>
+              <div class="metric glass"><div class="label">Vocabulary</div><div class="value" id="metricWords">100</div></div>
+              <div class="metric glass"><div class="label">High Score</div><div class="value" id="metricHigh">0</div></div>
+              <div class="metric glass"><div class="label">Played</div><div class="value" id="metricPlayed">0</div></div>
+              <div class="metric glass"><div class="label">Last Winner</div><div class="value" id="metricWinner">-</div></div>
             </div>
 
             <div class="grid-actions">
@@ -1044,24 +1107,15 @@
                 <p class="hint" style="margin-top:8px;">ถ้าเลือก Custom คุณสามารถปรับเวลา จำนวนรอบ และจำนวนชีวิตได้ทันที</p>
                 <div class="slider-group">
                   <div>
-                    <div class="slider-row">
-                      <label for="customTime">Time</label>
-                      <output id="customTimeOut">75s</output>
-                    </div>
+                    <div class="slider-row"><label for="customTime">Time</label><output id="customTimeOut">75s</output></div>
                     <input type="range" id="customTime" min="20" max="180" value="75" />
                   </div>
                   <div>
-                    <div class="slider-row">
-                      <label for="customRounds">Rounds</label>
-                      <output id="customRoundsOut">12</output>
-                    </div>
+                    <div class="slider-row"><label for="customRounds">Rounds</label><output id="customRoundsOut">12</output></div>
                     <input type="range" id="customRounds" min="5" max="30" value="12" />
                   </div>
                   <div>
-                    <div class="slider-row">
-                      <label for="customLives">Lives</label>
-                      <output id="customLivesOut">3</output>
-                    </div>
+                    <div class="slider-row"><label for="customLives">Lives</label><output id="customLivesOut">3</output></div>
                     <input type="range" id="customLives" min="1" max="7" value="3" />
                   </div>
                 </div>
@@ -1081,7 +1135,7 @@
 
         <section class="screen" id="screen-game">
           <div class="game-layout">
-            <div class="hud" id="gameHud">
+            <div class="hud">
               <div class="chip glass"><span>Mode</span><strong id="hudMode">Classic</strong></div>
               <div class="chip glass timer" id="timerChip"><span>Time Left</span><strong id="hudTimer">60</strong></div>
               <div class="chip glass"><span>Score</span><strong id="hudScore">0</strong></div>
@@ -1098,23 +1152,12 @@
                   <div class="pill" id="pronunciationPill">คำอ่าน</div>
                   <div class="pill" id="synonymPill">คำใกล้เคียง</div>
                 </div>
-
                 <div class="word-title" id="wordTitle">เบิ่ง</div>
-
                 <div class="clue-panel">
                   <div class="clue-grid">
-                    <div class="clue">
-                      <strong>Meaning</strong>
-                      <div id="meaningText">ดู, มอง</div>
-                    </div>
-                    <div class="clue">
-                      <strong>Example</strong>
-                      <div id="exampleText">มาเบิ่งทางนี้กอน</div>
-                    </div>
-                    <div class="clue">
-                      <strong>Nearby Word</strong>
-                      <div id="synonymText">แยง, จ้อง</div>
-                    </div>
+                    <div class="clue"><strong>Meaning</strong><div id="meaningText">ดู, มอง</div></div>
+                    <div class="clue"><strong>Example</strong><div id="exampleText">มาเบิ่งทางนี้กอน</div></div>
+                    <div class="clue"><strong>Nearby Word</strong><div id="synonymText">แยง, จ้อง</div></div>
                   </div>
                 </div>
               </div>
@@ -1139,7 +1182,7 @@
               <div class="shine"></div>
               <div class="capsule" style="width:max-content;">Paused</div>
               <h2>พักก่อนแล้วค่อยลุยต่อ</h2>
-              <p class="hint">เวลา สกอร์ และลำดับคำจะถูกคงไว้ 그대로 คุณสามารถกลับไปต่อได้ทันที</p>
+              <p class="hint">เวลา สกอร์ และลำดับคำจะถูกคงไว้ คุณสามารถกลับไปต่อได้ทันที</p>
               <div class="actions" style="justify-content:flex-start;">
                 <button class="btn primary" id="resumeBtn">Resume</button>
                 <button class="btn" id="restartBtn">Restart</button>
@@ -1171,7 +1214,6 @@
                 </div>
               </div>
             </div>
-
             <div class="actions">
               <button class="btn primary" id="playAgainBtn">Play Again</button>
               <button class="btn" data-nav="winner">See Winner Screen</button>
@@ -1305,24 +1347,22 @@
         const keys = Object.keys(obj);
         return keys.find(key => matches.some(match => key.toLowerCase().includes(match))) || "";
       };
-      return rows
-        .map(row => {
-          const wordKey = row["คำศัพท์"] ? "คำศัพท์" : findKey(row, ["คำศัพท์", "word", "term", "vocab", "title"]);
-          const readKey = row["คำอ่าน"] ? "คำอ่าน" : findKey(row, ["คำอ่าน", "reading", "pron", "roman"]);
-          const meanKey = row["ความหมาย"] ? "ความหมาย" : findKey(row, ["ความหมาย", "meaning", "definition", "translation"]);
-          const exampleKey = row["ตัวอย่างการใช้"] ? "ตัวอย่างการใช้" : findKey(row, ["ตัวอย่าง", "example", "usage", "sentence"]);
-          const nearKey = row["คำใกล้เคียง"] ? "คำใกล้เคียง" : findKey(row, ["ใกล้เคียง", "synonym", "near", "related"]);
-          const word = String(row[wordKey] ?? "").trim();
-          if (!word) return null;
-          return {
-            word,
-            reading: String(row[readKey] ?? "-").trim() || "-",
-            meaning: String(row[meanKey] ?? "-").trim() || "-",
-            example: String(row[exampleKey] ?? "-").trim() || "-",
-            nearby: String(row[nearKey] ?? "-").trim() || "-"
-          };
-        })
-        .filter(Boolean);
+      return rows.map(row => {
+        const wordKey = row["คำศัพท์"] ? "คำศัพท์" : findKey(row, ["คำศัพท์", "word", "term", "vocab", "title"]);
+        const readKey = row["คำอ่าน"] ? "คำอ่าน" : findKey(row, ["คำอ่าน", "reading", "pron", "roman"]);
+        const meanKey = row["ความหมาย"] ? "ความหมาย" : findKey(row, ["ความหมาย", "meaning", "definition", "translation"]);
+        const exampleKey = row["ตัวอย่างการใช้"] ? "ตัวอย่างการใช้" : findKey(row, ["ตัวอย่าง", "example", "usage", "sentence"]);
+        const nearKey = row["คำใกล้เคียง"] ? "คำใกล้เคียง" : findKey(row, ["ใกล้เคียง", "synonym", "near", "related"]);
+        const word = String(row[wordKey] ?? "").trim();
+        if (!word) return null;
+        return {
+          word,
+          reading: String(row[readKey] ?? "-").trim() || "-",
+          meaning: String(row[meanKey] ?? "-").trim() || "-",
+          example: String(row[exampleKey] ?? "-").trim() || "-",
+          nearby: String(row[nearKey] ?? "-").trim() || "-"
+        };
+      }).filter(Boolean);
     }
 
     function loadStats() {
@@ -1378,6 +1418,7 @@
       if (current) current.classList.add("leaving-left");
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
       next.classList.add("active");
+      next.scrollTop = 0;
       setTimeout(() => current && current.classList.remove("leaving-left"), 650);
       appState.currentScreen = screenId;
       if (screenId === "screen-browser") renderBrowser();
@@ -1417,8 +1458,7 @@
     function getModeConfig() {
       const base = MODES[appState.selectedMode];
       if (appState.selectedMode !== "custom") return { ...base };
-      const c = customConfig();
-      return { ...base, ...c, name: "Custom" };
+      return { ...base, ...customConfig(), name: "Custom" };
     }
 
     function createGameState() {
@@ -1440,8 +1480,7 @@
         interval: null,
         card: null,
         teams: [0, 0],
-        activeTeam: 0,
-        hintVisible: true
+        activeTeam: 0
       };
     }
 
@@ -1505,14 +1544,12 @@
       void el.wordCard.offsetWidth;
       el.wordCard.classList.add("entering");
       setTimeout(() => el.wordCard.classList.remove("entering"), 580);
-
       el.wordTitle.textContent = card.word;
       el.pronunciationPill.textContent = `คำอ่าน • ${card.reading}`;
       el.synonymPill.textContent = `ใกล้เคียง • ${card.nearby}`;
       el.meaningText.textContent = card.meaning;
       el.exampleText.textContent = card.example;
       el.synonymText.textContent = card.nearby;
-
       const clues = document.querySelector(".clue-panel");
       clues.style.display = appState.hintVisible ? "grid" : "none";
       if (!initial) burstParticles(0.22);
@@ -1530,7 +1567,6 @@
       node.className = "score-fly";
       node.textContent = text;
       node.style.color = color;
-      node.style.left = "50%";
       document.querySelector(".word-wrap").appendChild(node);
       setTimeout(() => node.remove(), 900);
     }
@@ -1574,7 +1610,6 @@
       } else {
         g.skip += 1;
         g.streak = 0;
-        if (g.config.key !== "battle") g.score = Math.max(0, g.score - 0);
         flyScore("skip", "var(--orange)");
       }
       updateHud();
@@ -1598,14 +1633,13 @@
       appState.stats.bestStreak = Math.max(appState.stats.bestStreak, g.bestStreak);
       saveStats();
 
-      el.resultTitle.textContent = g.config.key === "battle" ? `${winnerName}` : winnerName;
+      el.resultTitle.textContent = winnerName;
       el.resultScore.textContent = g.config.key === "battle" ? `${g.teams[0]} : ${g.teams[1]}` : finalScore;
-      el.resultSubtitle.textContent =
-        g.config.key === "battle"
-          ? "สกอร์ทีมถูกสรุปแล้ว พร้อมหน้าผู้ชนะและรีเพลย์แบบเดิมทันที"
-          : g.config.key === "survival"
-            ? "โหมดเอาตัวรอดให้แรงกดดันดีมาก ยิ่งสตรีคยาวยิ่งมีพลัง"
-            : "วงลื่นมาก คำเด้งต่อเนื่องและจังหวะตอบกำลังสวย";
+      el.resultSubtitle.textContent = g.config.key === "battle"
+        ? "สกอร์ทีมถูกสรุปแล้ว พร้อมหน้าผู้ชนะและรีเพลย์แบบเดิมทันที"
+        : g.config.key === "survival"
+          ? "โหมดเอาตัวรอดให้แรงกดดันดีมาก ยิ่งสตรีคยาวยิ่งมีพลัง"
+          : "วงลื่นมาก คำเด้งต่อเนื่องและจังหวะตอบกำลังสวย";
       el.sumCorrect.textContent = g.correct;
       el.sumWrong.textContent = g.wrong;
       el.sumSkip.textContent = g.skip;
@@ -1703,7 +1737,6 @@
           else if (nav === "modes") goTo("screen-modes");
           else if (nav === "browser") goTo("screen-browser");
           else if (nav === "winner") goTo("screen-winner");
-          else goTo(`screen-${nav}`);
           pressFX(btn);
         });
       });
@@ -1751,11 +1784,7 @@
       });
 
       el.searchInput.addEventListener("input", () => renderBrowser(el.searchInput.value));
-
-      [el.customTime, el.customRounds, el.customLives].forEach(input => {
-        input.addEventListener("input", syncCustomOutputs);
-      });
-
+      [el.customTime, el.customRounds, el.customLives].forEach(input => input.addEventListener("input", syncCustomOutputs));
       document.getElementById("themeToggle").addEventListener("click", cycleTheme);
 
       window.addEventListener("keydown", e => {
@@ -1787,11 +1816,10 @@
 
     function cycleTheme() {
       const order = ["auto", "light", "dark"];
-      const next = order[(order.indexOf(appState.theme) + 1) % order.length];
-      appState.theme = next;
+      appState.theme = order[(order.indexOf(appState.theme) + 1) % order.length];
       applyTheme();
-      localStorage.setItem("isan-glass-theme", next);
-      showToast(`Theme: ${next}`);
+      localStorage.setItem("isan-glass-theme", appState.theme);
+      showToast(`Theme: ${appState.theme}`);
     }
 
     function applyTheme() {
@@ -1831,7 +1859,7 @@
       return lines.slice(1).map(line => {
         const vals = splitRow(line);
         const obj = {};
-        headers.forEach((h, i) => obj[h] = vals[i] ?? "");
+        headers.forEach((h, i) => { obj[h] = vals[i] ?? ""; });
         return obj;
       });
     }
@@ -1845,17 +1873,18 @@
         document.documentElement.style.setProperty("--pointer-y", py);
         targets.forEach(node => {
           const r = node.getBoundingClientRect();
-          const x = `${((e.clientX - r.left) / r.width) * 100}%`;
-          const y = `${((e.clientY - r.top) / r.height) * 100}%`;
+          const x = `${((e.clientX - r.left) / Math.max(r.width, 1)) * 100}%`;
+          const y = `${((e.clientY - r.top) / Math.max(r.height, 1)) * 100}%`;
           node.style.setProperty("--pointer-x", x);
           node.style.setProperty("--pointer-y", y);
         });
-      });
+      }, { passive: true });
     }
 
     function tiltCards() {
       const selector = ".mode-card, .word-card, .browser-card, .metric";
       document.addEventListener("pointermove", e => {
+        if (window.matchMedia("(pointer: coarse)").matches) return;
         document.querySelectorAll(selector).forEach(card => {
           if (!card.matches(":hover")) return;
           const r = card.getBoundingClientRect();
@@ -1863,7 +1892,7 @@
           const ry = ((e.clientX - r.left) / r.width - 0.5) * 8;
           card.style.transform = `translateY(-6px) rotateX(${rx}deg) rotateY(${ry}deg)`;
         });
-      });
+      }, { passive: true });
       document.addEventListener("pointerout", e => {
         if (e.target && e.target.matches && e.target.matches(selector)) {
           e.target.style.transform = "";
