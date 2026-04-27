@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Isan Glass Guess Party</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg0: #eef3ff;
+      --bg1: #dfe9ff;
+      --bg2: #fbfdff;
+      --ink: #101726;
+      --muted: rgba(16, 23, 38, 0.62);
+      --panel: rgba(255, 255, 255, 0.18);
+      --panel-strong: rgba(255, 255, 255, 0.34);
+      --panel-dark: rgba(22, 26, 35, 0.3);
+      --line: rgba(255, 255, 255, 0.34);
+      --shadow: 0 24px 70px rgba(56, 84, 145, 0.18);
+      --shadow-soft: 0 10px 30px rgba(35, 54, 98, 0.14);
+      --blue: #2f7bff;
+      --cyan: #54d4ff;
+      --green: #32d57c;
+      --red: #ff5d71;
+      --orange: #ff9f43;
+      --yellow: #ffd86f;
+      --radius-xl: 34px;
+      --radius-lg: 28px;
+      --radius-md: 22px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --ease-spring: cubic-bezier(.2,.9,.2,1.08);
+      --ease-ios: cubic-bezier(.22,1,.36,1);
+      --pointer-x: 50%;
+      --pointer-y: 35%;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg0: #0a0d14;
+        --bg1: #121824;
+        --bg2: #1a2130;
+        --ink: #f5f7ff;
+        --muted: rgba(245, 247, 255, 0.68);
+        --panel: rgba(22, 27, 38, 0.34);
+        --panel-strong: rgba(31, 38, 54, 0.56);
+        --panel-dark: rgba(9, 11, 17, 0.58);
+        --line: rgba(255, 255, 255, 0.12);
+        --shadow: 0 24px 90px rgba(0, 0, 0, 0.4);
+        --shadow-soft: 0 10px 34px rgba(0, 0, 0, 0.28);
+        --blue: #58a6ff;
+        --cyan: #74edff;
+        --green: #3ce38d;
+        --red: #ff6e81;
+        --orange: #ffb054;
+        --yellow: #ffe487;
+      }
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "SF Pro Display", "SF Pro Text", "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(84, 212, 255, 0.16), transparent 30%),
+        radial-gradient(circle at 88% 14%, rgba(47, 123, 255, 0.18), transparent 32%),
+        radial-gradient(circle at 55% 100%, rgba(255, 255, 255, 0.44), transparent 35%),
+        linear-gradient(180deg, var(--bg0), var(--bg1) 50%, var(--bg2));
+      color: var(--ink);
+      overflow: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: -25vmax;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(30px);
+      animation: drift 22s linear infinite alternate;
+    }
+
+    body::before {
+      background:
+        radial-gradient(circle at 25% 30%, rgba(255,255,255,0.35), transparent 16%),
+        radial-gradient(circle at 65% 60%, rgba(84, 212, 255, 0.18), transparent 20%),
+        radial-gradient(circle at 60% 20%, rgba(47, 123, 255, 0.14), transparent 22%);
+    }
+
+    body::after {
+      background:
+        radial-gradient(circle at 78% 38%, rgba(255, 216, 111, 0.18), transparent 14%),
+        radial-gradient(circle at 38% 78%, rgba(50, 213, 124, 0.12), transparent 18%);
+      animation-duration: 28s;
+      animation-direction: alternate-reverse;
+    }
+
+    @keyframes drift {
+      from { transform: translate3d(-2%, -1%, 0) rotate(0.5deg); }
+      to { transform: translate3d(2%, 1%, 0) rotate(-0.5deg); }
+    }
+
+    #bgParticles, #fxCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .app {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      padding: calc(var(--safe-top) + 18px) 16px calc(var(--safe-bottom) + 20px);
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+    }
+
+    .shell {
+      position: relative;
+      width: min(1100px, 100%);
+      min-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 38px);
+      border-radius: 40px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08)),
+        radial-gradient(circle at var(--pointer-x) var(--pointer-y), rgba(255,255,255,0.3), transparent 26%);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      isolation: isolate;
+    }
+
+    .shell::before,
+    .shell::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .shell::before {
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.26), transparent 18%, transparent 78%, rgba(255,255,255,0.12)),
+        radial-gradient(circle at 20% 0%, rgba(255,255,255,0.26), transparent 22%),
+        radial-gradient(circle at 100% 10%, rgba(84,212,255,0.11), transparent 24%);
+      mix-blend-mode: screen;
+    }
+
+    .shell::after {
+      inset: 1px;
+      border-radius: 39px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.28);
+    }
+
+    .topbar {
+      position: absolute;
+      inset: 18px 18px auto 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .topbar > * { pointer-events: auto; }
+
+    .capsule, .glass, .chip, .metric, .mode-card, .word-card, .browser-card, .overlay-card {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.23), rgba(255,255,255,0.08)),
+        radial-gradient(circle at var(--pointer-x) var(--pointer-y), rgba(255,255,255,0.26), transparent 30%);
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.28),
+        inset 0 -1px 0 rgba(255,255,255,0.03),
+        var(--shadow-soft);
+      backdrop-filter: blur(22px) saturate(150%);
+      -webkit-backdrop-filter: blur(22px) saturate(150%);
+    }
+
+    .capsule {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      color: var(--muted);
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--cyan), var(--blue));
+      box-shadow: 0 0 18px rgba(84, 212, 255, 0.85);
+      animation: pulseSoft 2.4s infinite;
+    }
+
+    @keyframes pulseSoft {
+      0%, 100% { transform: scale(1); opacity: 0.95; }
+      50% { transform: scale(1.35); opacity: 0.72; }
+    }
+
+    .theme-toggle {
+      width: 52px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.12);
+      position: relative;
+      cursor: pointer;
+      transition: transform .25s var(--ease-ios), background .25s ease;
+    }
+
+    .theme-toggle:active { transform: scale(0.94); }
+
+    .theme-toggle::before {
+      content: "";
+      position: absolute;
+      inset: 3px auto 3px 3px;
+      width: 24px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.65));
+      box-shadow: 0 4px 16px rgba(0,0,0,0.16);
+      transition: transform .32s var(--ease-spring);
+    }
+
+    body[data-theme="dark"] .theme-toggle::before { transform: translateX(20px); }
+    body[data-theme="dark"] .theme-toggle { background: rgba(88,166,255,0.22); }
+
+    .screens {
+      position: relative;
+      min-height: inherit;
+      overflow: hidden;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      padding: 92px 20px 24px;
+      display: grid;
+      grid-template-rows: 1fr;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(28px) scale(0.98);
+      filter: blur(12px);
+      transition:
+        opacity .55s ease,
+        transform .68s var(--ease-ios),
+        filter .6s ease,
+        visibility 0s linear .6s;
+      z-index: 1;
+    }
+
+    .screen.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0) scale(1);
+      filter: blur(0);
+      transition-delay: 0s;
+      z-index: 3;
+    }
+
+    .screen.leaving-left {
+      transform: translateX(-26px) scale(0.985);
+      opacity: 0;
+      filter: blur(10px);
+    }
+
+    .stack {
+      display: grid;
+      align-content: center;
+      gap: 18px;
+      width: min(920px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 28px 14px;
+    }
+
+    .logo-orb {
+      width: clamp(116px, 20vw, 156px);
+      aspect-ratio: 1;
+      border-radius: 32%;
+      margin: 0 auto 20px;
+      position: relative;
+      background:
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,0.85), rgba(255,255,255,0.08) 38%, transparent 40%),
+        linear-gradient(150deg, rgba(255,255,255,0.55), rgba(255,255,255,0.08) 28%, rgba(47,123,255,0.25) 70%, rgba(84,212,255,0.24));
+      border: 1px solid rgba(255,255,255,0.36);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.55),
+        0 20px 60px rgba(47,123,255,0.18),
+        0 0 0 1px rgba(255,255,255,0.08);
+      backdrop-filter: blur(18px);
+      animation: floatLogo 4.8s ease-in-out infinite;
+      overflow: hidden;
+    }
+
+    .logo-orb::before,
+    .logo-orb::after {
+      content: "";
+      position: absolute;
+      inset: auto;
+      border-radius: 50%;
+      filter: blur(6px);
+    }
+
+    .logo-orb::before {
+      width: 60%;
+      height: 16%;
+      left: 18%;
+      top: 14%;
+      background: rgba(255,255,255,0.5);
+      transform: rotate(-10deg);
+    }
+
+    .logo-orb::after {
+      width: 44%;
+      height: 44%;
+      right: -10%;
+      bottom: -8%;
+      background: radial-gradient(circle, rgba(84,212,255,0.48), transparent 66%);
+    }
+
+    @keyframes floatLogo {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50% { transform: translateY(-10px) rotate(3deg); }
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: clamp(2.2rem, 5vw, 4.4rem); line-height: 0.95; letter-spacing: -0.05em; }
+    h2 { font-size: clamp(1.5rem, 3.4vw, 2.4rem); line-height: 1.05; letter-spacing: -0.04em; }
+    h3 { font-size: clamp(1rem, 2vw, 1.2rem); line-height: 1.2; }
+    .lead { color: var(--muted); font-size: clamp(1rem, 2vw, 1.18rem); line-height: 1.55; max-width: 680px; margin: 0 auto; }
+
+    .actions, .grid-actions, .hud-actions, .answer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn {
+      position: relative;
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.22);
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.11)),
+        radial-gradient(circle at 50% 0%, rgba(255,255,255,0.36), transparent 42%);
+      padding: 14px 20px;
+      min-height: 54px;
+      border-radius: 999px;
+      font: inherit;
+      font-weight: 650;
+      letter-spacing: -0.015em;
+      cursor: pointer;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.42),
+        0 12px 26px rgba(31,45,76,0.16);
+      transition:
+        transform .2s var(--ease-ios),
+        box-shadow .25s ease,
+        border-color .25s ease,
+        background .25s ease;
+      overflow: hidden;
+      isolation: isolate;
+      user-select: none;
+    }
+
+    .btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at var(--pointer-x) var(--pointer-y), rgba(255,255,255,0.35), transparent 34%);
+      opacity: 0.9;
+      z-index: -1;
+      transition: opacity .25s ease;
+    }
+
+    .btn::after {
+      content: "";
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      left: var(--ripple-x, 50%);
+      top: var(--ripple-y, 50%);
+      transform: translate(-50%, -50%) scale(0);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.46);
+      filter: blur(3px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 18px 34px rgba(31,45,76,0.18); }
+    .btn:active { transform: scale(0.96); }
+    .btn.pressed::after { animation: ripple .7s ease-out; }
+
+    @keyframes ripple {
+      0% { opacity: 0.65; transform: translate(-50%, -50%) scale(0); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(11); }
+    }
+
+    .btn.primary {
+      background:
+        linear-gradient(180deg, rgba(84,212,255,0.48), rgba(47,123,255,0.54)),
+        radial-gradient(circle at 20% 0%, rgba(255,255,255,0.54), transparent 45%);
+      color: white;
+      border-color: rgba(255,255,255,0.26);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.34),
+        0 18px 36px rgba(47,123,255,0.32),
+        0 0 32px rgba(84,212,255,0.16);
+    }
+
+    .btn.success {
+      background:
+        linear-gradient(180deg, rgba(63, 228, 145, 0.5), rgba(50, 213, 124, 0.6));
+      color: white;
+    }
+
+    .btn.danger {
+      background:
+        linear-gradient(180deg, rgba(255, 126, 145, 0.44), rgba(255, 93, 113, 0.56));
+      color: white;
+    }
+
+    .btn.warn {
+      background:
+        linear-gradient(180deg, rgba(255, 216, 111, 0.42), rgba(255, 159, 67, 0.52));
+      color: #44260b;
+    }
+
+    .btn.ghost {
+      background: rgba(255,255,255,0.08);
+      color: var(--muted);
+    }
+
+    .btn.block { width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 10px; }
+    .btn.small { min-height: 44px; padding: 10px 16px; font-size: 0.95rem; }
+    .btn .sub { display: block; font-size: 12px; color: rgba(255,255,255,0.84); font-weight: 500; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      min-height: 102px;
+      display: grid;
+      align-content: space-between;
+      transform-style: preserve-3d;
+      transition: transform .25s var(--ease-ios), box-shadow .25s ease;
+    }
+
+    .metric:hover { transform: translateY(-4px) rotateX(4deg); }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .metric .value {
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      font-weight: 760;
+      letter-spacing: -0.04em;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .mode-card, .browser-card {
+      position: relative;
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      min-height: 186px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .24s var(--ease-ios), box-shadow .24s ease, border-color .24s ease;
+      transform-style: preserve-3d;
+    }
+
+    .mode-card:hover, .browser-card:hover {
+      transform: translateY(-8px) rotateX(4deg) rotateY(-4deg);
+      box-shadow: 0 24px 48px rgba(31,45,76,0.18);
+    }
+
+    .mode-card.active {
+      border-color: rgba(84,212,255,0.5);
+      box-shadow: 0 0 0 1px rgba(84,212,255,0.22), 0 24px 50px rgba(47,123,255,0.22);
+    }
+
+    .mode-card .badge {
+      display: inline-flex;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.18);
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+
+    .mode-card p, .browser-card p { color: var(--muted); line-height: 1.45; }
+
+    .mode-card .shine, .word-card .shine, .browser-card .shine, .overlay-card .shine {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at var(--pointer-x) var(--pointer-y), rgba(255,255,255,0.22), transparent 28%);
+      pointer-events: none;
+      opacity: 0.95;
+    }
+
+    .config-panel {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 20px;
+      border-radius: var(--radius-lg);
+    }
+
+    .slider-group {
+      display: grid;
+      gap: 16px;
+      margin-top: 6px;
+    }
+
+    .slider-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .slider-row label { font-weight: 600; }
+    .slider-row output { color: var(--blue); font-weight: 760; }
+
+    input[type="range"] {
+      width: 100%;
+      appearance: none;
+      height: 36px;
+      background: transparent;
+      margin: 0;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(84,212,255,0.85), rgba(47,123,255,0.78));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 28px;
+      height: 28px;
+      margin-top: -10px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.72));
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    .game-layout {
+      width: min(1000px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
+      align-content: stretch;
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .chip {
+      border-radius: 22px;
+      padding: 14px 16px;
+      min-height: 88px;
+      display: grid;
+      gap: 6px;
+      align-content: center;
+      transition: transform .2s ease;
+    }
+
+    .chip strong {
+      font-size: clamp(1rem, 2.4vw, 1.5rem);
+      letter-spacing: -0.04em;
+    }
+
+    .chip span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .chip.timer.low {
+      animation: lowPulse 1s infinite alternate;
+      border-color: rgba(255, 109, 129, 0.48);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.22),
+        0 0 0 1px rgba(255, 109, 129, 0.22),
+        0 0 42px rgba(255, 93, 113, 0.2);
+    }
+
+    @keyframes lowPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.03); }
+    }
+
+    .word-wrap {
+      position: relative;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .word-card {
+      position: relative;
+      width: min(760px, 100%);
+      min-height: clamp(340px, 48vh, 500px);
+      border-radius: 38px;
+      padding: clamp(22px, 4vw, 34px);
+      display: grid;
+      gap: 18px;
+      align-content: space-between;
+      overflow: hidden;
+      transition: transform .36s var(--ease-ios), filter .36s ease, opacity .3s ease;
+      transform-style: preserve-3d;
+    }
+
+    .word-card.entering {
+      animation: cardIn .55s var(--ease-ios);
+    }
+
+    @keyframes cardIn {
+      from { transform: translateY(16px) scale(0.97); filter: blur(10px); opacity: 0; }
+      to { transform: translateY(0) scale(1); filter: blur(0); opacity: 1; }
+    }
+
+    .word-card.success {
+      animation: successBounce .62s var(--ease-spring);
+      border-color: rgba(50,213,124,0.52);
+      box-shadow: 0 0 0 1px rgba(50,213,124,0.22), 0 0 46px rgba(50,213,124,0.2), var(--shadow-soft);
+    }
+
+    @keyframes successBounce {
+      0% { transform: scale(1); }
+      20% { transform: scale(0.98); }
+      45% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+
+    .word-card.wrong {
+      animation: shake .45s ease;
+      border-color: rgba(255,93,113,0.5);
+      box-shadow: 0 0 0 1px rgba(255,93,113,0.22), 0 0 42px rgba(255,93,113,0.18), var(--shadow-soft);
+    }
+
+    @keyframes shake {
+      10%, 90% { transform: translateX(-2px); }
+      20%, 80% { transform: translateX(6px); }
+      30%, 50%, 70% { transform: translateX(-10px); }
+      40%, 60% { transform: translateX(10px); }
+    }
+
+    .word-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.16);
+      border: 1px solid rgba(255,255,255,0.16);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .word-title {
+      font-size: clamp(2.3rem, 7vw, 5.3rem);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+      text-align: center;
+      margin: auto 0;
+      text-wrap: balance;
+      text-shadow: 0 10px 34px rgba(31,45,76,0.12);
+    }
+
+    .clue-panel {
+      display: grid;
+      gap: 10px;
+    }
+
+    .clue-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .clue {
+      padding: 16px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.14);
+      min-height: 96px;
+    }
+
+    .clue strong { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .clue div { font-size: 1rem; line-height: 1.5; }
+
+    .answer-actions {
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .answer-actions .left, .answer-actions .right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      place-items: center;
+      background: rgba(8, 12, 22, 0.22);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .overlay.visible { display: grid; animation: overlayIn .28s ease; }
+
+    @keyframes overlayIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .overlay-card {
+      position: relative;
+      width: min(560px, calc(100% - 28px));
+      border-radius: 34px;
+      padding: 26px;
+      display: grid;
+      gap: 16px;
+      transform: scale(0.92);
+      animation: modalPop .42s var(--ease-spring) forwards;
+      overflow: hidden;
+    }
+
+    @keyframes modalPop {
+      to { transform: scale(1); }
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 16px;
+    }
+
+    .score-big {
+      font-size: clamp(3.2rem, 11vw, 6rem);
+      line-height: 0.9;
+      letter-spacing: -0.08em;
+      margin-top: 6px;
+    }
+
+    .summary-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.1);
+      color: var(--muted);
+    }
+
+    .winner {
+      text-align: center;
+      padding-top: 10px;
+    }
+
+    .winner .crown {
+      font-size: clamp(4rem, 10vw, 6rem);
+      filter: drop-shadow(0 18px 22px rgba(255, 216, 111, 0.24));
+      animation: crownFloat 3.2s ease-in-out infinite;
+    }
+
+    @keyframes crownFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .browser-layout {
+      width: min(1020px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 16px;
+    }
+
+    .searchbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .searchbar input {
+      flex: 1;
+      min-width: 220px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.1);
+      color: var(--ink);
+      border-radius: 999px;
+      min-height: 54px;
+      padding: 0 18px;
+      font: inherit;
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+    }
+
+    .browser-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      overflow: auto;
+      padding-right: 4px;
+      align-content: start;
+    }
+
+    .browser-card {
+      min-height: 0;
+      padding: 18px;
+    }
+
+    .browser-card h3 {
+      font-size: 1.4rem;
+      letter-spacing: -0.04em;
+      margin-bottom: 10px;
+    }
+
+    .browser-card .mini {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.5;
+    }
+
+    .toast-wrap {
+      position: absolute;
+      inset: auto 0 24px 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .toast {
+      min-width: 220px;
+      max-width: min(92vw, 460px);
+      padding: 14px 18px;
+      border-radius: 999px;
+      background: rgba(18, 24, 36, 0.7);
+      color: white;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      opacity: 0;
+      transform: translateY(18px) scale(0.96);
+      transition: opacity .32s ease, transform .32s var(--ease-ios);
+      text-align: center;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0) scale(1); }
+
+    .score-fly {
+      position: absolute;
+      left: 50%;
+      bottom: 110px;
+      transform: translateX(-50%);
+      font-size: 2rem;
+      font-weight: 820;
+      pointer-events: none;
+      text-shadow: 0 10px 28px rgba(0,0,0,0.18);
+      animation: flyUp .85s var(--ease-ios) forwards;
+    }
+
+    @keyframes flyUp {
+      0% { opacity: 0; transform: translate(-50%, 10px) scale(0.8); }
+      20% { opacity: 1; transform: translate(-50%, -6px) scale(1.05); }
+      100% { opacity: 0; transform: translate(-50%, -78px) scale(1.18); }
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 960px) {
+      .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .config-panel, .results-grid { grid-template-columns: 1fr; }
+      .hud { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .clue-grid { grid-template-columns: 1fr; }
+      .browser-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .screen { padding: 88px 14px 18px; }
+      .shell { min-height: calc(100vh - var(--safe-top) - var(--safe-bottom) - 18px); border-radius: 28px; }
+      .shell::after { border-radius: 27px; }
+      .topbar { inset: 12px 12px auto 12px; }
+      .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .answer-actions { flex-direction: column; align-items: stretch; }
+      .answer-actions .left, .answer-actions .right { width: 100%; justify-content: center; }
+      .btn.block-mobile { width: 100%; }
+      .word-card { min-height: 420px; padding: 20px; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body data-theme="auto">
+  <canvas id="bgParticles"></canvas>
+  <canvas id="fxCanvas"></canvas>
+
+  <div class="app">
+    <div class="shell" id="shell">
+      <div class="topbar">
+        <div class="capsule">
+          <span class="brand-dot"></span>
+          <span>Isan Glass Guess Party</span>
+        </div>
+        <div class="actions">
+          <button class="btn small ghost" id="importTopBtn">Import Vocabulary File</button>
+          <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"></button>
+        </div>
+      </div>
+
+      <div class="screens">
+        <section class="screen active" id="screen-splash">
+          <div class="stack hero">
+            <div class="logo-orb"></div>
+            <div class="capsule" style="margin:0 auto;">Liquid Glass Edition</div>
+            <h1>Guess fast.<br>Glow harder.</h1>
+            <p class="lead">เกมทายคำศัพท์อีสานสไตล์พรีเมียม ใช้ฐานข้อมูลจากไฟล์ Excel ที่คุณอัปโหลด พร้อมโมชั่นแบบ iOS และผิวสัมผัส Liquid Glass ทั้งแอป</p>
+            <div class="actions">
+              <button class="btn primary" data-nav="home">Enter Party</button>
+              <button class="btn" data-nav="browser">Browse Vocabulary</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-home">
+          <div class="stack">
+            <div class="hero">
+              <div class="capsule" style="margin:0 auto 12px;">100 Isan Words • Premium Party Mode</div>
+              <h2>เลือกจังหวะเกมของคืนนี้</h2>
+              <p class="lead">โหมดไว โหมดทีม โหมดเอาตัวรอด หรือคัสตอมทุกอย่างเองก็ได้ พร้อมสถิติและไฮสกอร์ที่จำไว้ในเครื่อง</p>
+            </div>
+
+            <div class="metrics">
+              <div class="metric glass">
+                <div class="label">Vocabulary</div>
+                <div class="value" id="metricWords">100</div>
+              </div>
+              <div class="metric glass">
+                <div class="label">High Score</div>
+                <div class="value" id="metricHigh">0</div>
+              </div>
+              <div class="metric glass">
+                <div class="label">Played</div>
+                <div class="value" id="metricPlayed">0</div>
+              </div>
+              <div class="metric glass">
+                <div class="label">Last Winner</div>
+                <div class="value" id="metricWinner">-</div>
+              </div>
+            </div>
+
+            <div class="grid-actions">
+              <button class="btn primary" data-nav="modes">Start Game</button>
+              <button class="btn" data-nav="browser">Vocabulary Browser</button>
+              <button class="btn" id="importMainBtn">Import Vocabulary File</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-modes">
+          <div class="stack">
+            <div class="hero">
+              <div class="capsule" style="margin:0 auto 12px;">Mode Select</div>
+              <h2>ออกแบบรอบเกมให้พอดีกับวง</h2>
+              <p class="lead">ทุกโหมดถูกปรับให้เล่นได้ทันที พร้อมเอฟเฟ็กต์ คะแนน เวลา และพฤติกรรมเกมที่ต่างกันชัดเจน</p>
+            </div>
+
+            <div class="mode-grid" id="modeGrid"></div>
+
+            <div class="config-panel">
+              <div class="panel glass">
+                <h3>Custom Studio</h3>
+                <p class="hint" style="margin-top:8px;">ถ้าเลือก Custom คุณสามารถปรับเวลา จำนวนรอบ และจำนวนชีวิตได้ทันที</p>
+                <div class="slider-group">
+                  <div>
+                    <div class="slider-row">
+                      <label for="customTime">Time</label>
+                      <output id="customTimeOut">75s</output>
+                    </div>
+                    <input type="range" id="customTime" min="20" max="180" value="75" />
+                  </div>
+                  <div>
+                    <div class="slider-row">
+                      <label for="customRounds">Rounds</label>
+                      <output id="customRoundsOut">12</output>
+                    </div>
+                    <input type="range" id="customRounds" min="5" max="30" value="12" />
+                  </div>
+                  <div>
+                    <div class="slider-row">
+                      <label for="customLives">Lives</label>
+                      <output id="customLivesOut">3</output>
+                    </div>
+                    <input type="range" id="customLives" min="1" max="7" value="3" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel glass">
+                <h3>Ready to Launch</h3>
+                <p class="hint" style="margin-top:8px;">คำศัพท์จะถูกสุ่มแบบไม่ซ้ำในแต่ละเกม ถ้าเบราว์เซอร์ไม่ยอมอ่านไฟล์อัตโนมัติ คุณยัง import ไฟล์ใหม่เข้าแทนฐานข้อมูลเดิมได้เสมอ</p>
+                <div class="actions" style="justify-content:flex-start; margin-top:18px;">
+                  <button class="btn primary block" id="startSelectedBtn">Start Selected Mode</button>
+                  <button class="btn block" data-nav="home">Back Home</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-game">
+          <div class="game-layout">
+            <div class="hud" id="gameHud">
+              <div class="chip glass"><span>Mode</span><strong id="hudMode">Classic</strong></div>
+              <div class="chip glass timer" id="timerChip"><span>Time Left</span><strong id="hudTimer">60</strong></div>
+              <div class="chip glass"><span>Score</span><strong id="hudScore">0</strong></div>
+              <div class="chip glass"><span>Round</span><strong id="hudRound">1 / 12</strong></div>
+              <div class="chip glass"><span>Lives</span><strong id="hudLives">∞</strong></div>
+              <div class="chip glass"><span>Deck Left</span><strong id="hudDeck">0</strong></div>
+            </div>
+
+            <div class="word-wrap">
+              <div class="word-card glass entering" id="wordCard">
+                <div class="shine"></div>
+                <div class="word-meta">
+                  <div class="pill" id="teamPill">Solo Play</div>
+                  <div class="pill" id="pronunciationPill">คำอ่าน</div>
+                  <div class="pill" id="synonymPill">คำใกล้เคียง</div>
+                </div>
+
+                <div class="word-title" id="wordTitle">เบิ่ง</div>
+
+                <div class="clue-panel">
+                  <div class="clue-grid">
+                    <div class="clue">
+                      <strong>Meaning</strong>
+                      <div id="meaningText">ดู, มอง</div>
+                    </div>
+                    <div class="clue">
+                      <strong>Example</strong>
+                      <div id="exampleText">มาเบิ่งทางนี้กอน</div>
+                    </div>
+                    <div class="clue">
+                      <strong>Nearby Word</strong>
+                      <div id="synonymText">แยง, จ้อง</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="answer-actions">
+              <div class="left">
+                <button class="btn small" id="toggleHintsBtn">Hide Hints</button>
+                <button class="btn small" id="switchTeamBtn">Switch Team</button>
+              </div>
+              <div class="right">
+                <button class="btn warn block-mobile" id="skipBtn">Skip</button>
+                <button class="btn danger block-mobile" id="wrongBtn">Wrong</button>
+                <button class="btn success block-mobile" id="correctBtn">Correct</button>
+                <button class="btn block-mobile" id="pauseBtn">Pause</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overlay" id="pauseOverlay">
+            <div class="overlay-card glass">
+              <div class="shine"></div>
+              <div class="capsule" style="width:max-content;">Paused</div>
+              <h2>พักก่อนแล้วค่อยลุยต่อ</h2>
+              <p class="hint">เวลา สกอร์ และลำดับคำจะถูกคงไว้ 그대로 คุณสามารถกลับไปต่อได้ทันที</p>
+              <div class="actions" style="justify-content:flex-start;">
+                <button class="btn primary" id="resumeBtn">Resume</button>
+                <button class="btn" id="restartBtn">Restart</button>
+                <button class="btn" data-nav="home">Exit Home</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-result">
+          <div class="stack">
+            <div class="results-grid">
+              <div class="overlay-card glass" style="animation:none; transform:none;">
+                <div class="shine"></div>
+                <div class="capsule" style="width:max-content;">Round Result</div>
+                <h2 id="resultTitle">Beautiful run.</h2>
+                <div class="score-big" id="resultScore">12</div>
+                <p class="hint" id="resultSubtitle">You lit up the table with a smooth streak.</p>
+              </div>
+              <div class="overlay-card glass" style="animation:none; transform:none;">
+                <div class="shine"></div>
+                <h3>Summary</h3>
+                <div class="summary-list">
+                  <div class="summary-row"><span>Correct</span><strong id="sumCorrect">0</strong></div>
+                  <div class="summary-row"><span>Wrong</span><strong id="sumWrong">0</strong></div>
+                  <div class="summary-row"><span>Skipped</span><strong id="sumSkip">0</strong></div>
+                  <div class="summary-row"><span>High Score</span><strong id="sumHigh">0</strong></div>
+                  <div class="summary-row"><span>Cards Played</span><strong id="sumPlayed">0</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary" id="playAgainBtn">Play Again</button>
+              <button class="btn" data-nav="winner">See Winner Screen</button>
+              <button class="btn" data-nav="home">Home</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-winner">
+          <div class="stack winner">
+            <div class="crown">✦</div>
+            <div class="capsule" style="margin:0 auto;">Victory Reveal</div>
+            <h2 id="winnerTitle">Winner: Team Aurora</h2>
+            <p class="lead" id="winnerLead">ทีมชนะคุมจังหวะได้ดีมาก คำมาเร็ว ตอบไว และไม่หลุดตอนนับถอยหลัง</p>
+            <div class="metrics">
+              <div class="metric glass"><div class="label">Top Score</div><div class="value" id="winnerScore">0</div></div>
+              <div class="metric glass"><div class="label">Best Streak</div><div class="value" id="winnerStreak">0</div></div>
+              <div class="metric glass"><div class="label">Mode</div><div class="value" id="winnerMode">Classic</div></div>
+              <div class="metric glass"><div class="label">Vocabulary</div><div class="value" id="winnerWords">100</div></div>
+            </div>
+            <div class="actions">
+              <button class="btn primary" id="winnerReplayBtn">Replay Mode</button>
+              <button class="btn" data-nav="browser">Browse Words</button>
+              <button class="btn" data-nav="home">Back Home</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-browser">
+          <div class="browser-layout">
+            <div class="hero" style="padding:0;">
+              <div class="capsule" style="margin:0 auto 12px;">Vocabulary Browser</div>
+              <h2>ฐานคำศัพท์อีสาน</h2>
+              <p class="lead">เลื่อนดู ค้นหา และใช้เป็นคลังคำก่อนเริ่มเล่นหรือระหว่างวางกติกาเองในวง</p>
+            </div>
+
+            <div class="searchbar">
+              <input id="searchInput" type="search" placeholder="ค้นหาคำศัพท์ คำอ่าน ความหมาย หรือประโยคตัวอย่าง" />
+              <button class="btn" id="shufflePreviewBtn">Random Preview</button>
+              <button class="btn" id="importBrowserBtn">Import File</button>
+              <button class="btn" data-nav="home">Home</button>
+            </div>
+
+            <div class="browser-grid" id="browserGrid"></div>
+          </div>
+        </section>
+
+        <div class="toast-wrap">
+          <div class="toast" id="toast"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" class="hidden" />
+
+  <script>
+    const EMBEDDED_VOCAB = [{"คำศัพท์":"เบิ่ง","คำอ่าน":"เบิ่ง","ความหมาย":"ดู, มอง","ตัวอย่างการใช้":"มาเบิ่งทางนี้กอน","คำใกล้เคียง":"แยง, จ้อง"},{"คำศัพท์":"ฮัก","คำอ่าน":"ฮัก","ความหมาย":"รัก","ตัวอย่างการใช้":"ข้อยฮักเจ้าหลาย","คำใกล้เคียง":"แพง, มัก"},{"คำศัพท์":"ซัง","คำอ่าน":"ซัง","ความหมาย":"เกลียด","ตัวอย่างการใช้":"อย่าเฮ็ดตัวน่าซังหลาย","คำใกล้เคียง":"บ่มัก"},{"คำศัพท์":"อีหลี","คำอ่าน":"อี-หลี","ความหมาย":"จริงๆ","ตัวอย่างการใช้":"เว้าอีหลีบ่?","คำใกล้เคียง":"แท้ๆ"},{"คำศัพท์":"จื่อ","คำอ่าน":"จื่อ","ความหมาย":"จำ","ตัวอย่างการใช้":"ข้อยจื่อหน้าเจ้าได้","คำใกล้เคียง":"จำ"},{"คำศัพท์":"ตาฮัก","คำอ่าน":"ตา-ฮัก","ความหมาย":"น่ารัก","ตัวอย่างการใช้":"เป็นตาฮักแท้","คำใกล้เคียง":"เป็นตาแพง"},{"คำศัพท์":"สำพอ","คำอ่าน":"สำ-พอ","ความหมาย":"มิน่าล่ะ","ตัวอย่างการใช้":"สำพอลาวบ่มา","คำใกล้เคียง":"สมพอ"},{"คำศัพท์":"พอกะเทิน","คำอ่าน":"พอ-กะ-เทิน","ความหมาย":"ครึ่งๆ กลางๆ","ตัวอย่างการใช้":"อย่าเฮ็ดพอกะเทิน","คำใกล้เคียง":"ค้างคา"},{"คำศัพท์":"ปึก","คำอ่าน":"ปึก","ความหมาย":"โง่, ไม่ฉลาด","ตัวอย่างการใช้":"คือมาปึกแท้","คำใกล้เคียง":"บ่ฉลาด"},{"คำศัพท์":"มึน","คำอ่าน":"มึน","ความหมาย":"ดื้อ","ตัวอย่างการใช้":"เด็กน้อยผู้นี้มึนคัก","คำใกล้เคียง":"ดื้อด้าน"},{"คำศัพท์":"แซ่บ","คำอ่าน":"แซ่บ","ความหมาย":"อร่อย","ตัวอย่างการใช้":"ส้มตำร้านนี้แซ่บคัก","คำใกล้เคียง":"นัว"},{"คำศัพท์":"นัว","คำอ่าน":"นัว","ความหมาย":"กลมกล่อม","ตัวอย่างการใช้":"แกงหน่อไม้นัวอีหลี","คำใกล้เคียง":"แซ่บ"},{"คำศัพท์":"จ่อย","คำอ่าน":"จ่อย","ความหมาย":"ผอม","ตัวอย่างการใช้":"ช่วงนี้คือจ่อยลงแท้","คำใกล้เคียง":"ผอมแห้ง"},{"คำศัพท์":"พี","คำอ่าน":"พี","ความหมาย":"อ้วน","ตัวอย่างการใช้":"กินหลายจนพีแล้ว","คำใกล้เคียง":"ตุ้ย"},{"คำศัพท์":"เฮ็ด","คำอ่าน":"เฮ็ด","ความหมาย":"ทำ","ตัวอย่างการใช้":"กำลังเฮ็ดหยังอยู่?","คำใกล้เคียง":"สร้าง"},{"คำศัพท์":"เว้า","คำอ่าน":"เว้า","ความหมาย":"พูด","ตัวอย่างการใช้":"อย่าเว้าพื้นคนอื่น","คำใกล้เคียง":"ปาก"},{"คำศัพท์":"ตั๋ว","คำอ่าน":"ตั๋ว","ความหมาย":"โกหก","ตัวอย่างการใช้":"อย่ามาตั๋วกันเด้อ","คำใกล้เคียง":"ขี้ฮก (ใต้)"},{"คำศัพท์":"เคียด","คำอ่าน":"เคียด","ความหมาย":"โกรธ","ตัวอย่างการใช้":"ข้อยเคียดให้เจ้าแล้ว","คำใกล้เคียง":"ศูนย์, ฮ้าย"},{"คำศัพท์":"ศูนย์","คำอ่าน":"สูน","ความหมาย":"โกรธมาก","ตัวอย่างการใช้":"อย่ามาทำให้ข้อยสูน","คำใกล้เคียง":"เคียด"},{"คำศัพท์":"ฮ้าย","คำอ่าน":"ฮ้าย","ความหมาย":"ดุ, ด่า","ตัวอย่างการใช้":"แม่ฮ้ายลูก","คำใกล้เคียง":"ด่า"},{"คำศัพท์":"พะนะ","คำอ่าน":"พะ-นะ","ความหมาย":"ว่าซั่น, (คำสร้อยท้ายประโยค)","ตัวอย่างการใช้":"เพิ่นสิมาพะนะ","คำใกล้เคียง":"ว่าซั่น"},{"คำศัพท์":"ผู้ลางคน","คำอ่าน":"ผู้-ลาง-คน","ความหมาย":"บางคน","ตัวอย่างการใช้":"ผู้ลางคนกะบ่ฮู้","คำใกล้เคียง":"บางคน"},{"คำศัพท์":"ลางเทื่อ","คำอ่าน":"ลาง-เทื่อ","ความหมาย":"บางที","ตัวอย่างการใช้":"ลางเทื่อกะเหงา","คำใกล้เคียง":"บางครั้ง"},{"คำศัพท์":"ตะกี้","คำอ่าน":"ตะ-กี้","ความหมาย":"เมื่อก่อน","ตัวอย่างการใช้":"ตะกี้ข้อยจ่อยกว่านี้","คำใกล้เคียง":"แต่ก่อน"},{"คำศัพท์":"จั๊ก","คำอ่าน":"จั๊ก","ความหมาย":"ไม่รู้","ตัวอย่างการใช้":"จั๊กสิไปไส","คำใกล้เคียง":"บ่ฮู้"},{"คำศัพท์":"จักน้อย","คำอ่าน":"จัก-น้อย","ความหมาย":"ประเดี๋ยว","ตัวอย่างการใช้":"รอจักน้อยเด้อ","คำใกล้เคียง":"คราวเดียว"},{"คำศัพท์":"บักหุ่ง","คำอ่าน":"บัก-หุ่ง","ความหมาย":"มะละกอ","ตัวอย่างการใช้":"ตำบักหุ่งแซ่บๆ","คำใกล้เคียง":"-"},{"คำศัพท์":"บักนัด","คำอ่าน":"บัก-นัด","ความหมาย":"สับปะรด","ตัวอย่างการใช้":"อยากกินบักนัด","คำใกล้เคียง":"-"},{"คำศัพท์":"บักมี่","คำอ่าน":"บัก-มี่","ความหมาย":"ขนุน","ตัวอย่างการใช้":"บักมี่สุกหวานดี","คำใกล้เคียง":"-"},{"คำศัพท์":"บักเขียบ","คำอ่าน":"บัก-เขียบ","ความหมาย":"น้อยหน่า","ตัวอย่างการใช้":"เก็บบักเขียบมาฝาก","คำใกล้เคียง":"-"},{"คำศัพท์":"กะปอม","คำอ่าน":"กะ-ปอม","ความหมาย":"กิ้งก่า","ตัวอย่างการใช้":"ไล่จับกะปอม","คำใกล้เคียง":"-"},{"คำศัพท์":"เขียด","คำอ่าน":"เขียด","ความหมาย":"กบตัวเล็ก","ตัวอย่างการใช้":"ไปไต้เขียด","คำใกล้เคียง":"-"},{"คำศัพท์":"จิหล่อ","คำอ่าน":"จิ-หล่อ","ความหมาย":"จิ้งหรีดชนิดหนึ่ง","ตัวอย่างการใช้":"คั่วจิหล่อ","คำใกล้เคียง":"-"},{"คำศัพท์":"แมงจีซอน","คำอ่าน":"แมง-จี-ซอน","ความหมาย":"แมลงกระชอน","ตัวอย่างการใช้":"ไปขุดแมงจีซอน","คำใกล้เคียง":"-"},{"คำศัพท์":"อึ่งเพ้า","คำอ่าน":"อึ่ง-เพ้า","ความหมาย":"อึ่งอ่างชนิดหนึ่ง","ตัวอย่างการใช้":"ต้มอึ่งเพ้าใส่ใบมะขาม","คำใกล้เคียง":"-"},{"คำศัพท์":"ซะมา","คำอ่าน":"ซะ-มา","ความหมาย":"ทำไมถึง...","ตัวอย่างการใช้":"ซะมาถ่ายนานแท้","คำใกล้เคียง":"คือมา"},{"คำศัพท์":"ดึก","คำอ่าน":"ดึก","ความหมาย":"เหวี่ยง, ขว้าง","ตัวอย่างการใช้":"ดึกก้อนหินลงน้ำ","คำใกล้เคียง":"ขว้าง"},{"คำศัพท์":"ถิ่ม","คำอ่าน":"ถิ่ม","ความหมาย":"ทิ้ง","ตัวอย่างการใช้":"อย่าถิ่มขยะ","คำใกล้เคียง":"ป่อย"},{"คำศัพท์":"ป้อย","คำอ่าน":"ป้อย","ความหมาย":"ด่าแช่ง","ตัวอย่างการใช้":"ลาวป้อยเก่งคัก","คำใกล้เคียง":"ด่า"},{"คำศัพท์":"ย่าน","คำอ่าน":"ย่าน","ความหมาย":"กลัว","ตัวอย่างการใช้":"ข้อยย่านผี","คำใกล้เคียง":"ตื่น"},{"คำศัพท์":"ยาน","คำอ่าน":"ยาน","ความหมาย":"ย่อน, ย้วย","ตัวอย่างการใช้":"เสื้อตัวนี้ยานหมดแล้ว","คำใกล้เคียง":"หย่อน"},{"คำศัพท์":"เกิบ","คำอ่าน":"เกิบ","ความหมาย":"รองเท้า","ตัวอย่างการใช้":"เกิบข้อยหาย","คำใกล้เคียง":"รองเท้า"},{"คำศัพท์":"ซ่ง","คำอ่าน":"ซ่ง","ความหมาย":"กางเกง","ตัวอย่างการใช้":"ใส่ซ่งขาสั้น","คำใกล้เคียง":"-"},{"คำศัพท์":"สิ่น","คำอ่าน":"สิ่น","ความหมาย":"ผ้าถุง","ตัวอย่างการใช้":"นุ่งผ้าสิ่น","คำใกล้เคียง":"ผ้าถุง"},{"คำศัพท์":"คึดฮอด","คำอ่าน":"คึด-ฮอด","ความหมาย":"คิดถึง","ตัวอย่างการใช้":"คึดฮอดบ้านหลาย","คำใกล้เคียง":"ระลึกถึง"},{"คำศัพท์":"ฮ้อน","คำอ่าน":"ฮ้อน","ความหมาย":"ร้อน","ตัวอย่างการใช้":"อากาศฮ้อนอีหลี","คำใกล้เคียง":"-"},{"คำศัพท์":"หนาวสั่นสาย","คำอ่าน":"หนาว-สั่น-สาย","ความหมาย":"หนาวสั่นสะท้าน","ตัวอย่างการใช้":"มื้อนี้หนาวสั่นสาย","คำใกล้เคียง":"-"},{"คำศัพท์":"หมื่น","คำอ่าน":"หมื่น","ความหมาย":"ลื่น","ตัวอย่างการใช้":"ระวังพื้นมันหมื่น","คำใกล้เคียง":"ลื่น"},{"คำศัพท์":"มื่น","คำอ่าน":"มื่น","ความหมาย":"ลืมตา","ตัวอย่างการใช้":"มื่นตาเบิ่ง","คำใกล้เคียง":"-"},{"คำศัพท์":"หลูโตน","คำอ่าน":"หลู-โตน","ความหมาย":"สงสาร","ตัวอย่างการใช้":"หลูโตนชาติลาวเด้","คำใกล้เคียง":"อีดู"},{"คำศัพท์":"เป็นตาอิโตน","คำอ่าน":"เป็น-ตา-อิ-โตน","ความหมาย":"น่าสงสาร","ตัวอย่างการใช้":"เห็นคนลำบากกะเป็นตาอิโตน","คำใกล้เคียง":"หลูโตน"},{"คำศัพท์":"ตาแสบง","คำอ่าน":"ตา-แส-บง","ความหมาย":"น่าสนุก","ตัวอย่างการใช้":"ไปเที่ยวงานวัดตาแสบง","คำใกล้เคียง":"เป็นตาม่วน"},{"คำศัพท์":"ม่วน","คำอ่าน":"ม่วน","ความหมาย":"สนุก","ตัวอย่างการใช้":"งานบุญม่วนคัก","คำใกล้เคียง":"สนุก"},{"คำศัพท์":"กะด้อกะเดี้ย","คำอ่าน":"กะ-ด้-กะ-เดี้ย","ความหมาย":"เกินไป","ตัวอย่างการใช้":"คือมาแพงกะด้อกะเดี้ย","คำใกล้เคียง":"โพดโพ"},{"คำศัพท์":"โพดโพ","คำอ่าน":"โพด-โพ","ความหมาย":"เกินไป, มากมาย","ตัวอย่างการใช้":"งามโพดโพ","คำใกล้เคียง":"กะด้อกะเดี้ย"},{"คำศัพท์":"เหลือใจ","คำอ่าน":"เหลือ-ใจ","ความหมาย":"น้อยใจ, เจ็บใจ","ตัวอย่างการใช้":"เหลือใจคักลาวตั๋วกัน","คำใกล้เคียง":"น้อยใจ"},{"คำศัพท์":"เสียเส้น","คำอ่าน":"เสีย-เส้น","ความหมาย":"เสียหน้า, เสียสติ","ตัวอย่างการใช้":"ลาวเว้าจนข้อยเสียเส้น","คำใกล้เคียง":"-"},{"คำศัพท์":"ตาหน่าย","คำอ่าน":"ตา-หน่าย","ความหมาย":"น่าเบื่อ, น่าเอือมระอา","ตัวอย่างการใช้":"คนผู้นี้ตาหน่ายแท้","คำใกล้เคียง":"เป็นตาเบื่อ"},{"คำศัพท์":"มัก","คำอ่าน":"มัก","ความหมาย":"ชอบ","ตัวอย่างการใช้":"ข้อยมักกินส้มตำ","คำใกล้เคียง":"ฮัก, ชอบ"},{"คำศัพท์":"ฮู้","คำอ่าน":"ฮู้","ความหมาย":"รู้","ตัวอย่างการใช้":"เจ้าฮู้บ่?","คำใกล้เคียง":"ทราบ"},{"คำศัพท์":"งึด","คำอ่าน":"งึด","ความหมาย":"อัศจรรย์, แปลกใจ (หรือประชดว่าไม่แคร์)","ตัวอย่างการใช้":"ข้อยงึดหลาย","คำใกล้เคียง":"แปลกใจ"},{"คำศัพท์":"ตาอีดู","คำอ่าน":"ตา-อี-ดู","ความหมาย":"น่าเอ็นดู","ตัวอย่างการใช้":"เด็กน้อยตาอีดูแท้","คำใกล้เคียง":"ตาฮัก"},{"คำศัพท์":"ขี้ค้าน","คำอ่าน":"ขี้-ค้าน","ความหมาย":"ขี้เกียจ","ตัวอย่างการใช้":"อย่าขี้ค้านหลาย","คำใกล้เคียง":"คร้าน"},{"คำศัพท์":"หมอนกิ่ว","คำอ่าน":"หมอน-กิ่ว","ความหมาย":"หมอนข้าง","ตัวอย่างการใช้":"กอดหมอนกิ่ว","คำใกล้เคียง":"-"},{"คำศัพท์":"ผ้าห่ม","คำอ่าน":"ผ้า-ห่ม","ความหมาย":"ผ้าห่ม","ตัวอย่างการใช้":"ห่มผ้าห่มหนาๆ","คำใกล้เคียง":"-"},{"คำศัพท์":"ขี้ตั๋ว","คำอ่าน":"ขี้-ตั๋ว","ความหมาย":"คนโกหก","ตัวอย่างการใช้":"บ่มักคนขี้ตั๋ว","คำใกล้เคียง":"คนหลอกลวง"},{"คำศัพท์":"ตีน","คำอ่าน":"ตีน","ความหมาย":"เท้า","ตัวอย่างการใช้":"ล้างตีนกอนขึ้นบ้าน","คำใกล้เคียง":"เท้า"},{"คำศัพท์":"แข่ว","คำอ่าน":"แข่ว","ความหมาย":"ฟัน","ตัวอย่างการใช้":"ไปหาหมอถอนแข่ว","คำใกล้เคียง":"ฟัน"},{"คำศัพท์":"คอขาดบาดตาย","คำอ่าน":"คอ-ขาด-บาด-ตาย","ความหมาย":"เรื่องร้ายแรง","ตัวอย่างการใช้":"เรื่องคอขาดบาดตาย","คำใกล้เคียง":"-"},{"คำศัพท์":"หย่ำ","คำอ่าน":"หย่ำ","ความหมาย":"เคี้ยว","ตัวอย่างการใช้":"หย่ำข้าวให้ละเอียด","คำใกล้เคียง":"เคี้ยว"},{"คำศัพท์":"ฟ่าว","คำอ่าน":"ฟ่าว","ความหมาย":"รีบ","ตัวอย่างการใช้":"ฟ่าวไปฟ่าวมา","คำใกล้เคียง":"รีบด่วน"},{"คำศัพท์":"แล่น","คำอ่าน":"แล่น","ความหมาย":"วิ่ง","ตัวอย่างการใช้":"เด็กน้อยแล่นเล่น","คำใกล้เคียง":"วิ่ง"},{"คำศัพท์":"ย่าง","คำอ่าน":"ย่าง","ความหมาย":"เดิน","ตัวอย่างการใช้":"ย่างไปตลาด","คำใกล้เคียง":"เดิน"},{"คำศัพท์":"จอบ","คำอ่าน":"จอบ","ความหมาย":"แอบดู","ตัวอย่างการใช้":"จอบเบิ่งผู้สาว","คำใกล้เคียง":"แอบ"},{"คำศัพท์":"แว","คำอ่าน":"แว","ความหมาย":"แวะ","ตัวอย่างการใช้":"แวซื้อของกินกอน","คำใกล้เคียง":"แวะ"},{"คำศัพท์":"เมื่อ","คำอ่าน":"เมื่อ","ความหมาย":"กลับ","ตัวอย่างการใช้":"เมื่อบ้านเฮากัน","คำใกล้เคียง":"กลับบ้าน"},{"คำศัพท์":"บ่แม่น","คำอ่าน":"บ่อ-แม่น","ความหมาย":"ไม่ใช่","ตัวอย่างการใช้":"บ่แม่นข้อยเด้อ","คำใกล้เคียง":"ไม่ใช่"},{"คำศัพท์":"บ่เป็นหยัง","คำอ่าน":"บ่อ-เป็น-หยัง","ความหมาย":"ไม่เป็นไร","ตัวอย่างการใช้":"บ่เป็นหยังดอก","คำใกล้เคียง":"-"},{"คำศัพท์":"ดึกดื่น","คำอ่าน":"ดึก-ดื่น","ความหมาย":"ดึกมาก","ตัวอย่างการใช้":"นอนดึกดื่นคัก","คำใกล้เคียง":"-"},{"คำศัพท์":"แจ้ง","คำอ่าน":"แจ้ง","ความหมาย":"สว่าง","ตัวอย่างการใช้":"ตะเว็นแจ้งแล้ว","คำใกล้เคียง":"สว่าง"},{"คำศัพท์":"มืดตึ๊ดตื๋อ","คำอ่าน":"มืด-ตึ๊ด-ตื๋อ","ความหมาย":"มืดสนิท","ตัวอย่างการใช้":"ทางมืดตึ๊ดตื๋อ","คำใกล้เคียง":"มืดคัก"},{"คำศัพท์":"ตะเว็น","คำอ่าน":"ตะ-เว็น","ความหมาย":"ดวงอาทิตย์","ตัวอย่างการใช้":"ตะเว็นตกดิน","คำใกล้เคียง":"อาทิตย์"},{"คำศัพท์":"อีเกิ้ง","คำอ่าน":"อี-เกิ้ง","ความหมาย":"ดวงจันทร์","ตัวอย่างการใช้":"คืนนี้อีเกิ้งแจ้ง","คำใกล้เคียง":"พระจันทร์"},{"คำศัพท์":"ฝนตกฮำ","คำอ่าน":"ฝน-ตก-ฮำ","ความหมาย":"ฝนตกใส่","ตัวอย่างการใช้":"เปียกย้อนฝนตกฮำ","คำใกล้เคียง":"-"},{"คำศัพท์":"ขี้ตม","คำอ่าน":"ขี้-ตม","ความหมาย":"โคลน","ตัวอย่างการใช้":"ระวังเหยียบขี้ตม","คำใกล้เคียง":"เลน"},{"คำศัพท์":"หม่อง","คำอ่าน":"หม่อง","ความหมาย":"ที่, บริเวณ","ตัวอย่างการใช้":"หม่องนี่ของไผ?","คำใกล้เคียง":"ที่"},{"คำศัพท์":"ฮู","คำอ่าน":"ฮู","ความหมาย":"รู","ตัวอย่างการใช้":"ฮูหนู","คำใกล้เคียง":"รู"},{"คำศัพท์":"กะจั่งซั่น","คำอ่าน":"กะ-จั่ง-ซั่น","ความหมาย":"ก็เป็นอย่างนั้น","ตัวอย่างการใช้":"มันกะจั่งซั่นล่ะ","คำใกล้เคียง":"ก็อย่างนั้น"},{"คำศัพท์":"ซั่นดอก","คำอ่าน":"ซั่น-ดอก","ความหมาย":"อย่างนั้นแหละ (คำสร้อย)","ตัวอย่างการใช้":"บอกเฉยๆ ซั่นดอก","คำใกล้เคียง":"-"},{"คำศัพท์":"ดาก","คำอ่าน":"ดาก","ความหมาย":"ก้น","ตัวอย่างการใช้":"เจ็บดาก","คำใกล้เคียง":"ก้น"},{"คำศัพท์":"ออนซอน","คำอ่าน":"ออน-ซอน","ความหมาย":"ทึ่ง, ชื่นชม","ตัวอย่างการใช้":"ออนซอนความงาม","คำใกล้เคียง":"ชื่นชม"},{"คำศัพท์":"ปะสา","คำอ่าน":"ปะ-สา","ความหมาย":"แค่, เพียงแค่","ตัวอย่างการใช้":"ปะสาเงินแค่นี้","คำใกล้เคียง":"แค่"},{"คำศัพท์":"ยาม","คำอ่าน":"ยาม","ความหมาย":"เวลา, เมื่อ","ตัวอย่างการใช้":"ยามกินกะกิน","คำใกล้เคียง":"ตอน"},{"คำศัพท์":"จั่งได๋","คำอ่าน":"จั่ง-ได๋","ความหมาย":"อย่างไร","ตัวอย่างการใช้":"เป็นจั่งได๋สบายดีบ่?","คำใกล้เคียง":"ยังไง"},{"คำศัพท์":"คือ","คำอ่าน":"คือ","ความหมาย":"เหมือน","ตัวอย่างการใช้":"คือกันเลย","คำใกล้เคียง":"เหมือน"},{"คำศัพท์":"พอวอแพแว","คำอ่าน":"พอ-วอ-แพ-แว","ความหมาย":"โผล่มาให้เห็นนิดหน่อย","ตัวอย่างการใช้":"หน้าพอวอแพแว","คำใกล้เคียง":"-"},{"คำศัพท์":"ลุ่ย","คำอ่าน":"ลุ่ย","ความหมาย":"ผ่าน, ทะลุ","ตัวอย่างการใช้":"ลุ่ยเข้าไปเลย","คำใกล้เคียง":"-"},{"คำศัพท์":"ซอด","คำอ่าน":"ซอด","ความหมาย":"ทะลุ, ถึง","ตัวอย่างการใช้":"ทางนี้ซอดไปไส?","คำใกล้เคียง":"ทะลุ"},{"คำศัพท์":"เมือย","คำอ่าน":"เมือย","ความหมาย":"เหนื่อย","ตัวอย่างการใช้":"ทำงานเมือยคัก","คำใกล้เคียง":"เหนื่อย"},{"คำศัพท์":"บ่หยัน","คำอ่าน":"บ่อ-หยัน","ความหมาย":"ไม่ย่อท้อ, ไม่กลัว","ตัวอย่างการใช้":"คนสู้บ่หยัน","คำใกล้เคียง":"ไม่กลัว"}];
+
+    const MODES = {
+      classic: { key: "classic", name: "Classic", time: 60, rounds: 12, lives: Infinity, desc: "บาลานซ์ที่สุด เล่นลื่น จบไว เหมาะเริ่มวง", badge: "Balanced" },
+      battle: { key: "battle", name: "Team Battle", time: 75, rounds: 16, lives: Infinity, desc: "แข่งสองทีม สลับทีมเมื่อพร้อม และชิงสกอร์สูงสุด", badge: "2 Teams" },
+      speed: { key: "speed", name: "Speed Run", time: 45, rounds: 20, lives: Infinity, desc: "เร็วจัด ตอบไว คำเด้งต่อเนื่องเหมือน arcade", badge: "Fast" },
+      survival: { key: "survival", name: "Survival", time: 55, rounds: 30, lives: 3, desc: "พลาดได้จำกัด ตอบถูกเพิ่มเวลา ลุ้นจนวินาทีสุดท้าย", badge: "High Risk" },
+      custom: { key: "custom", name: "Custom", time: 75, rounds: 12, lives: 3, desc: "ออกแบบเวลารอบและจำนวนชีวิตเองทั้งหมด", badge: "Flexible" }
+    };
+
+    const appState = {
+      theme: "auto",
+      vocab: normalizeVocab(EMBEDDED_VOCAB),
+      selectedMode: "classic",
+      currentScreen: "screen-splash",
+      hintVisible: true,
+      game: null,
+      stats: loadStats()
+    };
+
+    const el = {
+      shell: document.getElementById("shell"),
+      toast: document.getElementById("toast"),
+      fileInput: document.getElementById("fileInput"),
+      modeGrid: document.getElementById("modeGrid"),
+      browserGrid: document.getElementById("browserGrid"),
+      searchInput: document.getElementById("searchInput"),
+      metricWords: document.getElementById("metricWords"),
+      metricHigh: document.getElementById("metricHigh"),
+      metricPlayed: document.getElementById("metricPlayed"),
+      metricWinner: document.getElementById("metricWinner"),
+      customTime: document.getElementById("customTime"),
+      customRounds: document.getElementById("customRounds"),
+      customLives: document.getElementById("customLives"),
+      customTimeOut: document.getElementById("customTimeOut"),
+      customRoundsOut: document.getElementById("customRoundsOut"),
+      customLivesOut: document.getElementById("customLivesOut"),
+      wordCard: document.getElementById("wordCard"),
+      wordTitle: document.getElementById("wordTitle"),
+      pronunciationPill: document.getElementById("pronunciationPill"),
+      synonymPill: document.getElementById("synonymPill"),
+      teamPill: document.getElementById("teamPill"),
+      meaningText: document.getElementById("meaningText"),
+      exampleText: document.getElementById("exampleText"),
+      synonymText: document.getElementById("synonymText"),
+      hudMode: document.getElementById("hudMode"),
+      hudTimer: document.getElementById("hudTimer"),
+      hudScore: document.getElementById("hudScore"),
+      hudRound: document.getElementById("hudRound"),
+      hudLives: document.getElementById("hudLives"),
+      hudDeck: document.getElementById("hudDeck"),
+      timerChip: document.getElementById("timerChip"),
+      pauseOverlay: document.getElementById("pauseOverlay"),
+      resultTitle: document.getElementById("resultTitle"),
+      resultScore: document.getElementById("resultScore"),
+      resultSubtitle: document.getElementById("resultSubtitle"),
+      sumCorrect: document.getElementById("sumCorrect"),
+      sumWrong: document.getElementById("sumWrong"),
+      sumSkip: document.getElementById("sumSkip"),
+      sumHigh: document.getElementById("sumHigh"),
+      sumPlayed: document.getElementById("sumPlayed"),
+      winnerTitle: document.getElementById("winnerTitle"),
+      winnerLead: document.getElementById("winnerLead"),
+      winnerScore: document.getElementById("winnerScore"),
+      winnerStreak: document.getElementById("winnerStreak"),
+      winnerMode: document.getElementById("winnerMode"),
+      winnerWords: document.getElementById("winnerWords"),
+      switchTeamBtn: document.getElementById("switchTeamBtn"),
+      toggleHintsBtn: document.getElementById("toggleHintsBtn")
+    };
+
+    function normalizeVocab(rows) {
+      const findKey = (obj, matches) => {
+        const keys = Object.keys(obj);
+        return keys.find(key => matches.some(match => key.toLowerCase().includes(match))) || "";
+      };
+      return rows
+        .map(row => {
+          const wordKey = row["คำศัพท์"] ? "คำศัพท์" : findKey(row, ["คำศัพท์", "word", "term", "vocab", "title"]);
+          const readKey = row["คำอ่าน"] ? "คำอ่าน" : findKey(row, ["คำอ่าน", "reading", "pron", "roman"]);
+          const meanKey = row["ความหมาย"] ? "ความหมาย" : findKey(row, ["ความหมาย", "meaning", "definition", "translation"]);
+          const exampleKey = row["ตัวอย่างการใช้"] ? "ตัวอย่างการใช้" : findKey(row, ["ตัวอย่าง", "example", "usage", "sentence"]);
+          const nearKey = row["คำใกล้เคียง"] ? "คำใกล้เคียง" : findKey(row, ["ใกล้เคียง", "synonym", "near", "related"]);
+          const word = String(row[wordKey] ?? "").trim();
+          if (!word) return null;
+          return {
+            word,
+            reading: String(row[readKey] ?? "-").trim() || "-",
+            meaning: String(row[meanKey] ?? "-").trim() || "-",
+            example: String(row[exampleKey] ?? "-").trim() || "-",
+            nearby: String(row[nearKey] ?? "-").trim() || "-"
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function loadStats() {
+      try {
+        return JSON.parse(localStorage.getItem("isan-glass-stats")) || {
+          highScore: 0,
+          played: 0,
+          lastWinner: "-",
+          bestStreak: 0
+        };
+      } catch {
+        return { highScore: 0, played: 0, lastWinner: "-", bestStreak: 0 };
+      }
+    }
+
+    function saveStats() {
+      localStorage.setItem("isan-glass-stats", JSON.stringify(appState.stats));
+    }
+
+    function updateMetrics() {
+      el.metricWords.textContent = appState.vocab.length;
+      el.metricHigh.textContent = appState.stats.highScore;
+      el.metricPlayed.textContent = appState.stats.played;
+      el.metricWinner.textContent = appState.stats.lastWinner || "-";
+      el.winnerWords.textContent = appState.vocab.length;
+    }
+
+    function shuffle(list) {
+      const copy = [...list];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function showToast(message) {
+      el.toast.textContent = message;
+      el.toast.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.toast.classList.remove("show"), 2100);
+    }
+
+    function screenById(id) {
+      return document.getElementById(id);
+    }
+
+    function goTo(screenId) {
+      if (appState.currentScreen === screenId) return;
+      const current = screenById(appState.currentScreen);
+      const next = screenById(screenId);
+      if (!next) return;
+      if (current) current.classList.add("leaving-left");
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      next.classList.add("active");
+      setTimeout(() => current && current.classList.remove("leaving-left"), 650);
+      appState.currentScreen = screenId;
+      if (screenId === "screen-browser") renderBrowser();
+      if (screenId === "screen-home") updateMetrics();
+    }
+
+    function buildModeCards() {
+      el.modeGrid.innerHTML = "";
+      Object.values(MODES).forEach(mode => {
+        const card = document.createElement("button");
+        card.className = "mode-card glass" + (mode.key === appState.selectedMode ? " active" : "");
+        card.type = "button";
+        card.dataset.mode = mode.key;
+        card.innerHTML = `
+          <div class="shine"></div>
+          <div class="badge">${mode.badge}</div>
+          <h3>${mode.name}</h3>
+          <p style="margin:10px 0 18px;">${mode.desc}</p>
+          <div class="hint">${mode.time}s • ${mode.rounds} rounds${mode.lives !== Infinity ? ` • ${mode.lives} lives` : ""}</div>
+        `;
+        card.addEventListener("click", () => {
+          appState.selectedMode = mode.key;
+          buildModeCards();
+        });
+        el.modeGrid.appendChild(card);
+      });
+    }
+
+    function customConfig() {
+      return {
+        time: Number(el.customTime.value),
+        rounds: Number(el.customRounds.value),
+        lives: Number(el.customLives.value)
+      };
+    }
+
+    function getModeConfig() {
+      const base = MODES[appState.selectedMode];
+      if (appState.selectedMode !== "custom") return { ...base };
+      const c = customConfig();
+      return { ...base, ...c, name: "Custom" };
+    }
+
+    function createGameState() {
+      const config = getModeConfig();
+      const deck = shuffle(appState.vocab);
+      return {
+        config,
+        deck,
+        index: 0,
+        timer: config.time,
+        score: 0,
+        correct: 0,
+        wrong: 0,
+        skip: 0,
+        streak: 0,
+        bestStreak: 0,
+        lives: config.lives,
+        paused: false,
+        interval: null,
+        card: null,
+        teams: [0, 0],
+        activeTeam: 0,
+        hintVisible: true
+      };
+    }
+
+    function startGame() {
+      if (!appState.vocab.length) {
+        showToast("ยังไม่มีคำศัพท์ให้เล่น ลอง import ไฟล์ก่อน");
+        return;
+      }
+      appState.game = createGameState();
+      goTo("screen-game");
+      el.pauseOverlay.classList.remove("visible");
+      el.switchTeamBtn.style.display = appState.game.config.key === "battle" ? "inline-flex" : "none";
+      el.toggleHintsBtn.textContent = "Hide Hints";
+      nextCard(true);
+      updateHud();
+      clearInterval(appState.game.interval);
+      appState.game.interval = setInterval(tick, 1000);
+      burstParticles(0.5);
+    }
+
+    function tick() {
+      const g = appState.game;
+      if (!g || g.paused) return;
+      g.timer -= 1;
+      if (g.timer <= 0) {
+        g.timer = 0;
+        updateHud();
+        endGame();
+        return;
+      }
+      updateHud();
+    }
+
+    function updateHud() {
+      const g = appState.game;
+      if (!g) return;
+      el.hudMode.textContent = g.config.name;
+      el.hudTimer.textContent = `${g.timer}s`;
+      el.hudScore.textContent = g.config.key === "battle" ? `${g.teams[0]} : ${g.teams[1]}` : g.score;
+      el.hudRound.textContent = `${Math.min(g.index + (g.card ? 1 : 0), g.config.rounds)} / ${g.config.rounds}`;
+      el.hudLives.textContent = Number.isFinite(g.lives) ? "♥ ".repeat(Math.max(g.lives, 0)).trim() || "0" : "∞";
+      el.hudDeck.textContent = Math.max(g.deck.length - g.index - 1, 0);
+      el.timerChip.classList.toggle("low", g.timer <= Math.max(10, Math.floor(g.config.time * 0.18)));
+      el.teamPill.textContent = g.config.key === "battle" ? `Team ${g.activeTeam + 1}` : "Solo Play";
+    }
+
+    function nextCard(initial = false) {
+      const g = appState.game;
+      if (!g) return;
+      if (g.index >= g.deck.length || g.index >= g.config.rounds) {
+        endGame();
+        return;
+      }
+      g.card = g.deck[g.index++];
+      renderCard(g.card, initial);
+      updateHud();
+    }
+
+    function renderCard(card, initial = false) {
+      el.wordCard.classList.remove("success", "wrong");
+      void el.wordCard.offsetWidth;
+      el.wordCard.classList.add("entering");
+      setTimeout(() => el.wordCard.classList.remove("entering"), 580);
+
+      el.wordTitle.textContent = card.word;
+      el.pronunciationPill.textContent = `คำอ่าน • ${card.reading}`;
+      el.synonymPill.textContent = `ใกล้เคียง • ${card.nearby}`;
+      el.meaningText.textContent = card.meaning;
+      el.exampleText.textContent = card.example;
+      el.synonymText.textContent = card.nearby;
+
+      const clues = document.querySelector(".clue-panel");
+      clues.style.display = appState.hintVisible ? "grid" : "none";
+      if (!initial) burstParticles(0.22);
+    }
+
+    function flashCard(type) {
+      el.wordCard.classList.remove("success", "wrong");
+      void el.wordCard.offsetWidth;
+      el.wordCard.classList.add(type);
+      setTimeout(() => el.wordCard.classList.remove(type), 600);
+    }
+
+    function flyScore(text, color) {
+      const node = document.createElement("div");
+      node.className = "score-fly";
+      node.textContent = text;
+      node.style.color = color;
+      node.style.left = "50%";
+      document.querySelector(".word-wrap").appendChild(node);
+      setTimeout(() => node.remove(), 900);
+    }
+
+    function handleAnswer(kind) {
+      const g = appState.game;
+      if (!g || g.paused) return;
+      if (kind === "correct") {
+        g.correct += 1;
+        g.streak += 1;
+        g.bestStreak = Math.max(g.bestStreak, g.streak);
+        if (g.config.key === "battle") {
+          g.teams[g.activeTeam] += 1;
+          flyScore("+1", "var(--green)");
+        } else {
+          const bonus = g.streak >= 3 ? 2 : 1;
+          g.score += bonus;
+          flyScore(`+${bonus}`, "var(--green)");
+        }
+        if (g.config.key === "survival") g.timer = Math.min(g.timer + 2, g.config.time + 25);
+        flashCard("success");
+        confettiBurst("success");
+      } else if (kind === "wrong") {
+        g.wrong += 1;
+        g.streak = 0;
+        if (Number.isFinite(g.lives)) {
+          g.lives -= 1;
+          if (g.lives <= 0) {
+            g.lives = 0;
+            flashCard("wrong");
+            updateHud();
+            setTimeout(endGame, 380);
+            return;
+          }
+        } else if (g.config.key !== "battle") {
+          g.score = Math.max(0, g.score - 1);
+        }
+        flyScore("-1", "var(--red)");
+        flashCard("wrong");
+        confettiBurst("wrong");
+      } else {
+        g.skip += 1;
+        g.streak = 0;
+        if (g.config.key !== "battle") g.score = Math.max(0, g.score - 0);
+        flyScore("skip", "var(--orange)");
+      }
+      updateHud();
+      setTimeout(() => {
+        if (g && !g.paused) nextCard();
+      }, 230);
+    }
+
+    function endGame() {
+      const g = appState.game;
+      if (!g) return;
+      clearInterval(g.interval);
+      const finalScore = g.config.key === "battle" ? Math.max(...g.teams) : g.score;
+      const winnerName = g.config.key === "battle"
+        ? g.teams[0] === g.teams[1] ? "Tie Match" : `Team ${g.teams[0] > g.teams[1] ? 1 : 2}`
+        : finalScore >= Math.max(8, Math.floor(g.config.rounds * 0.7)) ? "Brilliant Run" : finalScore >= 4 ? "Smooth Finish" : "Keep the Party Going";
+
+      appState.stats.highScore = Math.max(appState.stats.highScore, finalScore);
+      appState.stats.played += 1;
+      appState.stats.lastWinner = winnerName;
+      appState.stats.bestStreak = Math.max(appState.stats.bestStreak, g.bestStreak);
+      saveStats();
+
+      el.resultTitle.textContent = g.config.key === "battle" ? `${winnerName}` : winnerName;
+      el.resultScore.textContent = g.config.key === "battle" ? `${g.teams[0]} : ${g.teams[1]}` : finalScore;
+      el.resultSubtitle.textContent =
+        g.config.key === "battle"
+          ? "สกอร์ทีมถูกสรุปแล้ว พร้อมหน้าผู้ชนะและรีเพลย์แบบเดิมทันที"
+          : g.config.key === "survival"
+            ? "โหมดเอาตัวรอดให้แรงกดดันดีมาก ยิ่งสตรีคยาวยิ่งมีพลัง"
+            : "วงลื่นมาก คำเด้งต่อเนื่องและจังหวะตอบกำลังสวย";
+      el.sumCorrect.textContent = g.correct;
+      el.sumWrong.textContent = g.wrong;
+      el.sumSkip.textContent = g.skip;
+      el.sumHigh.textContent = appState.stats.highScore;
+      el.sumPlayed.textContent = g.correct + g.wrong + g.skip;
+
+      el.winnerTitle.textContent = g.config.key === "battle"
+        ? (g.teams[0] === g.teams[1] ? "Tie Match" : `Winner: Team ${g.teams[0] > g.teams[1] ? 1 : 2}`)
+        : `Winner Energy: ${winnerName}`;
+      el.winnerLead.textContent = g.config.key === "battle"
+        ? `ทีม 1 ได้ ${g.teams[0]} คะแนน • ทีม 2 ได้ ${g.teams[1]} คะแนน`
+        : `คุณเก็บได้ ${finalScore} คะแนน พร้อมสตรีคสูงสุด ${g.bestStreak} คำ`;
+      el.winnerScore.textContent = finalScore;
+      el.winnerStreak.textContent = g.bestStreak;
+      el.winnerMode.textContent = g.config.name;
+
+      goTo("screen-result");
+      burstParticles(1);
+    }
+
+    function pauseGame() {
+      if (!appState.game) return;
+      appState.game.paused = true;
+      el.pauseOverlay.classList.add("visible");
+    }
+
+    function resumeGame() {
+      if (!appState.game) return;
+      appState.game.paused = false;
+      el.pauseOverlay.classList.remove("visible");
+    }
+
+    function restartGame() {
+      if (!appState.game) return;
+      startGame();
+      showToast("เริ่มรอบใหม่แล้ว");
+    }
+
+    function switchTeam() {
+      const g = appState.game;
+      if (!g || g.config.key !== "battle") return;
+      g.activeTeam = g.activeTeam === 0 ? 1 : 0;
+      updateHud();
+      showToast(`สลับเป็น Team ${g.activeTeam + 1}`);
+    }
+
+    function toggleHints() {
+      appState.hintVisible = !appState.hintVisible;
+      document.querySelector(".clue-panel").style.display = appState.hintVisible ? "grid" : "none";
+      el.toggleHintsBtn.textContent = appState.hintVisible ? "Hide Hints" : "Show Hints";
+    }
+
+    function renderBrowser(query = "") {
+      const q = query.trim().toLowerCase();
+      const items = appState.vocab.filter(item => {
+        const blob = `${item.word} ${item.reading} ${item.meaning} ${item.example} ${item.nearby}`.toLowerCase();
+        return !q || blob.includes(q);
+      });
+      el.browserGrid.innerHTML = "";
+      items.forEach(item => {
+        const card = document.createElement("article");
+        card.className = "browser-card glass";
+        card.innerHTML = `
+          <div class="shine"></div>
+          <div class="mini">${item.reading}</div>
+          <h3>${item.word}</h3>
+          <p><strong>ความหมาย:</strong> ${item.meaning}</p>
+          <p class="hint" style="margin-top:8px;"><strong>ตัวอย่าง:</strong> ${item.example}</p>
+          <p class="hint" style="margin-top:8px;"><strong>ใกล้เคียง:</strong> ${item.nearby}</p>
+        `;
+        el.browserGrid.appendChild(card);
+      });
+      if (!items.length) {
+        el.browserGrid.innerHTML = `
+          <div class="browser-card glass" style="grid-column:1 / -1;">
+            <div class="shine"></div>
+            <h3>ไม่พบคำที่ค้นหา</h3>
+            <p class="hint">ลองใช้คำอ่าน ความหมาย หรือส่วนหนึ่งของประโยคตัวอย่างแทน</p>
+          </div>
+        `;
+      }
+    }
+
+    function previewRandomWord() {
+      const item = appState.vocab[Math.floor(Math.random() * appState.vocab.length)];
+      if (!item) return;
+      showToast(`${item.word} • ${item.meaning}`);
+    }
+
+    function bindButtons() {
+      document.querySelectorAll("[data-nav]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const nav = btn.dataset.nav;
+          if (nav === "home") goTo("screen-home");
+          else if (nav === "modes") goTo("screen-modes");
+          else if (nav === "browser") goTo("screen-browser");
+          else if (nav === "winner") goTo("screen-winner");
+          else goTo(`screen-${nav}`);
+          pressFX(btn);
+        });
+      });
+
+      document.querySelectorAll(".btn").forEach(btn => {
+        btn.addEventListener("pointerdown", e => pressFX(btn, e));
+      });
+
+      document.getElementById("startSelectedBtn").addEventListener("click", startGame);
+      document.getElementById("correctBtn").addEventListener("click", () => handleAnswer("correct"));
+      document.getElementById("wrongBtn").addEventListener("click", () => handleAnswer("wrong"));
+      document.getElementById("skipBtn").addEventListener("click", () => handleAnswer("skip"));
+      document.getElementById("pauseBtn").addEventListener("click", pauseGame);
+      document.getElementById("resumeBtn").addEventListener("click", resumeGame);
+      document.getElementById("restartBtn").addEventListener("click", restartGame);
+      document.getElementById("playAgainBtn").addEventListener("click", startGame);
+      document.getElementById("winnerReplayBtn").addEventListener("click", startGame);
+      document.getElementById("switchTeamBtn").addEventListener("click", switchTeam);
+      document.getElementById("toggleHintsBtn").addEventListener("click", toggleHints);
+      document.getElementById("shufflePreviewBtn").addEventListener("click", previewRandomWord);
+
+      ["importTopBtn", "importMainBtn", "importBrowserBtn"].forEach(id => {
+        document.getElementById(id).addEventListener("click", () => el.fileInput.click());
+      });
+
+      el.fileInput.addEventListener("change", async e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+          const rows = file.name.toLowerCase().endsWith(".csv")
+            ? await importCsv(file)
+            : await importExcel(file);
+          const normalized = normalizeVocab(rows);
+          if (!normalized.length) throw new Error("No usable rows");
+          appState.vocab = normalized;
+          updateMetrics();
+          renderBrowser(el.searchInput.value);
+          showToast(`นำเข้าแล้ว ${normalized.length} คำ`);
+        } catch (err) {
+          console.error(err);
+          showToast("นำเข้าไม่สำเร็จ ลองไฟล์ที่มีคอลัมน์คำศัพท์/ความหมาย");
+        } finally {
+          e.target.value = "";
+        }
+      });
+
+      el.searchInput.addEventListener("input", () => renderBrowser(el.searchInput.value));
+
+      [el.customTime, el.customRounds, el.customLives].forEach(input => {
+        input.addEventListener("input", syncCustomOutputs);
+      });
+
+      document.getElementById("themeToggle").addEventListener("click", cycleTheme);
+
+      window.addEventListener("keydown", e => {
+        if (appState.currentScreen !== "screen-game" || !appState.game) return;
+        if (e.code === "Space") { e.preventDefault(); handleAnswer("correct"); }
+        if (e.key.toLowerCase() === "x") handleAnswer("wrong");
+        if (e.key.toLowerCase() === "s") handleAnswer("skip");
+        if (e.key.toLowerCase() === "p") appState.game.paused ? resumeGame() : pauseGame();
+      });
+    }
+
+    function syncCustomOutputs() {
+      el.customTimeOut.textContent = `${el.customTime.value}s`;
+      el.customRoundsOut.textContent = el.customRounds.value;
+      el.customLivesOut.textContent = el.customLives.value;
+    }
+
+    function pressFX(btn, e) {
+      const rect = btn.getBoundingClientRect();
+      const x = e ? `${((e.clientX - rect.left) / rect.width) * 100}%` : "50%";
+      const y = e ? `${((e.clientY - rect.top) / rect.height) * 100}%` : "50%";
+      btn.style.setProperty("--ripple-x", x);
+      btn.style.setProperty("--ripple-y", y);
+      btn.classList.remove("pressed");
+      void btn.offsetWidth;
+      btn.classList.add("pressed");
+      setTimeout(() => btn.classList.remove("pressed"), 700);
+    }
+
+    function cycleTheme() {
+      const order = ["auto", "light", "dark"];
+      const next = order[(order.indexOf(appState.theme) + 1) % order.length];
+      appState.theme = next;
+      applyTheme();
+      localStorage.setItem("isan-glass-theme", next);
+      showToast(`Theme: ${next}`);
+    }
+
+    function applyTheme() {
+      const theme = appState.theme;
+      if (theme === "auto") {
+        document.body.dataset.theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      } else {
+        document.body.dataset.theme = theme;
+      }
+    }
+
+    async function ensureXLSX() {
+      if (window.XLSX) return window.XLSX;
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+        script.onload = () => resolve(window.XLSX);
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    async function importExcel(file) {
+      const XLSX = await ensureXLSX();
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      return XLSX.utils.sheet_to_json(ws, { defval: "" });
+    }
+
+    async function importCsv(file) {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) return [];
+      const splitRow = row => row.match(/(".*?"|[^",\s]+|[^,]+)/g)?.map(v => v.replace(/^"|"$/g, "").trim()) || [];
+      const headers = splitRow(lines[0]);
+      return lines.slice(1).map(line => {
+        const vals = splitRow(line);
+        const obj = {};
+        headers.forEach((h, i) => obj[h] = vals[i] ?? "");
+        return obj;
+      });
+    }
+
+    function pointerLighting() {
+      const targets = document.querySelectorAll(".glass, .mode-card, .word-card, .browser-card, .btn, .shell");
+      window.addEventListener("pointermove", e => {
+        const px = `${(e.clientX / window.innerWidth) * 100}%`;
+        const py = `${(e.clientY / window.innerHeight) * 100}%`;
+        document.documentElement.style.setProperty("--pointer-x", px);
+        document.documentElement.style.setProperty("--pointer-y", py);
+        targets.forEach(node => {
+          const r = node.getBoundingClientRect();
+          const x = `${((e.clientX - r.left) / r.width) * 100}%`;
+          const y = `${((e.clientY - r.top) / r.height) * 100}%`;
+          node.style.setProperty("--pointer-x", x);
+          node.style.setProperty("--pointer-y", y);
+        });
+      });
+    }
+
+    function tiltCards() {
+      const selector = ".mode-card, .word-card, .browser-card, .metric";
+      document.addEventListener("pointermove", e => {
+        document.querySelectorAll(selector).forEach(card => {
+          if (!card.matches(":hover")) return;
+          const r = card.getBoundingClientRect();
+          const rx = ((e.clientY - r.top) / r.height - 0.5) * -8;
+          const ry = ((e.clientX - r.left) / r.width - 0.5) * 8;
+          card.style.transform = `translateY(-6px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+        });
+      });
+      document.addEventListener("pointerout", e => {
+        if (e.target && e.target.matches && e.target.matches(selector)) {
+          e.target.style.transform = "";
+        }
+      });
+    }
+
+    function initBackgroundParticles() {
+      const canvas = document.getElementById("bgParticles");
+      const ctx = canvas.getContext("2d");
+      let particles = [];
+
+      function resize() {
+        canvas.width = innerWidth * devicePixelRatio;
+        canvas.height = innerHeight * devicePixelRatio;
+        canvas.style.width = innerWidth + "px";
+        canvas.style.height = innerHeight + "px";
+        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+        particles = Array.from({ length: innerWidth < 700 ? 26 : 40 }, () => ({
+          x: Math.random() * innerWidth,
+          y: Math.random() * innerHeight,
+          r: Math.random() * 2.6 + 1,
+          vx: (Math.random() - 0.5) * 0.22,
+          vy: Math.random() * 0.3 + 0.08,
+          a: Math.random() * 0.45 + 0.08
+        }));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+        for (const p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.y > innerHeight + 20) { p.y = -10; p.x = Math.random() * innerWidth; }
+          if (p.x > innerWidth + 10) p.x = -10;
+          if (p.x < -10) p.x = innerWidth + 10;
+          ctx.beginPath();
+          ctx.fillStyle = `rgba(255,255,255,${p.a})`;
+          ctx.shadowColor = "rgba(132,212,255,0.35)";
+          ctx.shadowBlur = 12;
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        requestAnimationFrame(draw);
+      }
+
+      addEventListener("resize", resize);
+      resize();
+      draw();
+    }
+
+    const FX = (() => {
+      const canvas = document.getElementById("fxCanvas");
+      const ctx = canvas.getContext("2d");
+      let pieces = [];
+
+      function resize() {
+        canvas.width = innerWidth * devicePixelRatio;
+        canvas.height = innerHeight * devicePixelRatio;
+        canvas.style.width = innerWidth + "px";
+        canvas.style.height = innerHeight + "px";
+        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      }
+
+      function addBurst(count = 18, color = "rgba(84,212,255,0.85)", spread = 1) {
+        const baseX = innerWidth * 0.5;
+        const baseY = innerHeight * 0.55;
+        for (let i = 0; i < count; i++) {
+          pieces.push({
+            x: baseX,
+            y: baseY,
+            vx: (Math.random() - 0.5) * 8 * spread,
+            vy: (Math.random() - 0.9) * 7 * spread,
+            size: Math.random() * 8 + 3,
+            life: Math.random() * 46 + 30,
+            rot: Math.random() * Math.PI,
+            vr: (Math.random() - 0.5) * 0.18,
+            color
+          });
+        }
+      }
+
+      function update() {
+        ctx.clearRect(0, 0, innerWidth, innerHeight);
+        pieces = pieces.filter(p => p.life-- > 0);
+        for (const p of pieces) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.08;
+          p.rot += p.vr;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.globalAlpha = Math.max(p.life / 60, 0);
+          ctx.fillStyle = p.color;
+          ctx.shadowBlur = 18;
+          ctx.shadowColor = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+          ctx.restore();
+        }
+        requestAnimationFrame(update);
+      }
+
+      addEventListener("resize", resize);
+      resize();
+      update();
+      return { addBurst };
+    })();
+
+    function burstParticles(intensity = 0.3) {
+      FX.addBurst(Math.round(18 + 30 * intensity), "rgba(255,255,255,0.88)", 0.5 + intensity);
+    }
+
+    function confettiBurst(kind = "success") {
+      const color = kind === "success" ? "rgba(62,227,141,0.95)" : "rgba(255,110,129,0.95)";
+      FX.addBurst(kind === "success" ? 28 : 18, color, kind === "success" ? 1 : 0.7);
+    }
+
+    function init() {
+      const savedTheme = localStorage.getItem("isan-glass-theme");
+      if (savedTheme) appState.theme = savedTheme;
+      applyTheme();
+      syncCustomOutputs();
+      updateMetrics();
+      buildModeCards();
+      renderBrowser();
+      bindButtons();
+      pointerLighting();
+      tiltCards();
+      initBackgroundParticles();
+      setTimeout(() => {
+        if (appState.currentScreen === "screen-splash") showToast("Excel vocabulary loaded and ready");
+      }, 700);
+      setTimeout(() => {
+        if (appState.currentScreen === "screen-splash") goTo("screen-home");
+      }, 2500);
+    }
+
+    init();
+  </script>
+</body>
+</html>
