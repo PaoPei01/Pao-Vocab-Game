@@ -701,6 +701,105 @@
       place-items: center;
     }
 
+    .game-layout.tilt-landscape {
+      width: min(1200px, 100%);
+      min-height: 100%;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+    }
+
+    .game-layout.tilt-landscape .hud {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .game-layout.tilt-landscape .word-wrap {
+      align-items: stretch;
+    }
+
+    .game-layout.tilt-landscape .word-card {
+      width: 100%;
+      min-height: min(58dvh, 520px);
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      align-items: stretch;
+      column-gap: 18px;
+      row-gap: 16px;
+      padding: clamp(20px, 3vw, 34px);
+    }
+
+    .game-layout.tilt-landscape .word-meta {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+    }
+
+    .game-layout.tilt-landscape .word-meta .pill:nth-child(2),
+    .game-layout.tilt-landscape .word-meta .pill:nth-child(3) {
+      display: none;
+    }
+
+    .game-layout.tilt-landscape .word-title {
+      font-size: clamp(4.2rem, 10vw, 7.6rem);
+      text-align: center;
+      display: grid;
+      align-items: center;
+      margin: 0;
+      padding-right: 0;
+    }
+
+    .game-layout.tilt-landscape .clue-panel {
+      align-self: stretch;
+      display: none;
+      align-content: stretch;
+    }
+
+    .game-layout.tilt-landscape .clue-grid {
+      grid-template-columns: 1fr;
+      grid-auto-rows: 1fr;
+      height: 100%;
+    }
+
+    .game-layout.tilt-landscape .clue:nth-child(3) {
+      display: none;
+    }
+
+    .game-layout.tilt-landscape .clue {
+      min-height: 0;
+      display: grid;
+      align-content: center;
+    }
+
+    .game-layout.tilt-landscape .answer-actions {
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 2px;
+    }
+
+    .game-layout.tilt-landscape .answer-actions .left {
+      gap: 8px;
+    }
+
+    .game-layout.tilt-landscape.show-hints .word-card {
+      grid-template-columns: minmax(0, 1.15fr) minmax(260px, .85fr);
+    }
+
+    .game-layout.tilt-landscape.show-hints .word-meta {
+      justify-content: space-between;
+    }
+
+    .game-layout.tilt-landscape.show-hints .word-meta .pill:nth-child(2) {
+      display: inline-flex;
+    }
+
+    .game-layout.tilt-landscape.show-hints .word-title {
+      font-size: clamp(3.4rem, 8vw, 6.4rem);
+      text-align: left;
+      padding-right: 10px;
+    }
+
+    .game-layout.tilt-landscape.show-hints .clue-panel {
+      display: grid;
+    }
+
     .word-card {
       position: relative;
       width: min(760px, 100%);
@@ -869,6 +968,68 @@
       border-radius: 50%;
       background: linear-gradient(180deg, var(--cyan), var(--blue));
       box-shadow: 0 0 18px rgba(84, 212, 255, 0.8);
+    }
+
+    .countdown-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 26;
+      display: none;
+      place-items: center;
+      padding: 24px;
+      background: rgba(8, 12, 22, 0.18);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .countdown-overlay.visible {
+      display: grid;
+      animation: overlayIn .24s ease;
+    }
+
+    .countdown-card {
+      width: min(560px, 100%);
+      padding: 28px;
+      border-radius: 34px;
+      text-align: center;
+      display: grid;
+      gap: 16px;
+    }
+
+    .countdown-number {
+      font-size: clamp(4rem, 16vw, 8rem);
+      line-height: 0.9;
+      letter-spacing: -0.09em;
+      font-weight: 820;
+      text-shadow: 0 18px 46px rgba(31,45,76,0.22);
+      animation: countdownPulse .9s var(--ease-spring) infinite;
+    }
+
+    @keyframes countdownPulse {
+      0% { transform: scale(0.86); opacity: 0.75; }
+      40% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.92); opacity: 0.88; }
+    }
+
+    .tutorial-gestures {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .tutorial-gesture {
+      padding: 14px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.12);
+      text-align: center;
+    }
+
+    .tutorial-gesture strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1rem;
     }
 
     @keyframes modalPop {
@@ -1044,6 +1205,7 @@
       .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .clue-grid { grid-template-columns: 1fr; }
       .browser-grid { grid-template-columns: 1fr; }
+      .tutorial-gestures { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 640px) {
@@ -1081,6 +1243,16 @@
       .capsule { max-width: 70vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .searchbar input { min-width: 100%; }
       .score-fly { bottom: 70px; }
+    }
+
+    @media (orientation: landscape) and (max-height: 560px) {
+      .game-layout.tilt-landscape .word-card {
+        min-height: min(52dvh, 420px);
+      }
+
+      .game-layout.tilt-landscape .word-title {
+        font-size: clamp(2.8rem, 6vw, 5rem);
+      }
     }
   </style>
 </head>
@@ -1178,7 +1350,7 @@
                   </button>
                   <button class="choice-card glass" type="button" data-control-mode="tilt">
                     <h3>Tilt Mode</h3>
-                    <p>คว่ำเครื่อง = ถูก เงยเครื่อง = ข้าม ฟีลปาร์ตี้แบบ ChaYen บนมือถือ</p>
+                    <p>คว่ำเครื่อง = ถูก เงยเครื่อง = ข้าม เอียงซ้าย/ขวา = ผิด พร้อมพยายามล็อกแนวนอนอัตโนมัติ</p>
                   </button>
                 </div>
                 <p class="hint" id="controlModeHint" style="margin-top:12px;">ตอนนี้ใช้ Tap Mode อยู่</p>
@@ -1225,6 +1397,7 @@
               <div class="left">
                 <button class="btn small" id="toggleHintsBtn">Hide Hints</button>
                 <button class="btn small" id="switchTeamBtn">Switch Team</button>
+                <button class="btn small hidden" id="fullscreenBtn">Fullscreen</button>
                 <div class="tilt-state hidden" id="tiltState">
                   <span class="tilt-orb"></span>
                   <span id="tiltStateText">Tilt standby</span>
@@ -1250,6 +1423,17 @@
                 <button class="btn" id="restartBtn">Restart</button>
                 <button class="btn" data-nav="home">Exit Home</button>
               </div>
+            </div>
+          </div>
+
+          <div class="countdown-overlay" id="countdownOverlay">
+            <div class="countdown-card glass">
+              <div class="shine"></div>
+              <div class="capsule" style="margin:0 auto;">Tilt Launch</div>
+              <h2>หันจอไปหาเพื่อน</h2>
+              <p class="hint" id="countdownHint">เตรียมถือเครื่องให้เพื่อนเห็นคำ แล้วเกมจะเริ่มเองทันที</p>
+              <div class="countdown-number" id="countdownNumber">3</div>
+              <p class="hint" id="countdownSubhint">Tilt gestures: คว่ำ = ถูก • เงย = ข้าม • เอียง = ผิด</p>
             </div>
           </div>
         </section>
@@ -1343,6 +1527,32 @@
     </div>
   </div>
 
+  <div class="overlay" id="tiltTutorialOverlay">
+    <div class="overlay-card glass">
+      <div class="shine"></div>
+      <div class="capsule" style="width:max-content;">Tilt Tutorial</div>
+      <h2>เล่นยังไงใน Tilt Mode</h2>
+      <p class="hint">ถือเครื่องแนวนอน หันจอไปหาเพื่อน แล้วใช้ท่าทางแทนการกดปุ่ม</p>
+      <div class="tutorial-gestures">
+        <div class="tutorial-gesture">
+          <strong>คว่ำเครื่อง</strong>
+          <div class="hint">นับเป็น Correct</div>
+        </div>
+        <div class="tutorial-gesture">
+          <strong>เงยเครื่อง</strong>
+          <div class="hint">นับเป็น Skip</div>
+        </div>
+        <div class="tutorial-gesture">
+          <strong>เอียงซ้าย/ขวา</strong>
+          <div class="hint">นับเป็น Wrong</div>
+        </div>
+      </div>
+      <div class="actions" style="justify-content:flex-start;">
+        <button class="btn primary" id="tiltTutorialStartBtn">เข้าใจแล้ว เริ่มเลย</button>
+      </div>
+    </div>
+  </div>
+
   <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" class="hidden" />
 
   <script>
@@ -1372,7 +1582,10 @@
         baselineBeta: null,
         lastActionAt: 0,
         stateText: "Tilt standby",
-        permissionRequested: false
+        permissionRequested: false,
+        countdownTimer: null,
+        countdownActive: false,
+        tutorialSeen: localStorage.getItem("isan-glass-tilt-tutorial-seen") === "1"
       }
     };
 
@@ -1380,6 +1593,7 @@
       shell: document.getElementById("shell"),
       toast: document.getElementById("toast"),
       fileInput: document.getElementById("fileInput"),
+      gameLayout: document.querySelector(".game-layout"),
       modeGrid: document.getElementById("modeGrid"),
       browserGrid: document.getElementById("browserGrid"),
       searchInput: document.getElementById("searchInput"),
@@ -1426,12 +1640,19 @@
       winnerWords: document.getElementById("winnerWords"),
       switchTeamBtn: document.getElementById("switchTeamBtn"),
       toggleHintsBtn: document.getElementById("toggleHintsBtn"),
+      fullscreenBtn: document.getElementById("fullscreenBtn"),
       tiltState: document.getElementById("tiltState"),
       tiltStateText: document.getElementById("tiltStateText"),
       tiltOverlay: document.getElementById("tiltOverlay"),
       tiltOverlayText: document.getElementById("tiltOverlayText"),
       tiltEnableBtn: document.getElementById("tiltEnableBtn"),
-      tiltFallbackBtn: document.getElementById("tiltFallbackBtn")
+      tiltFallbackBtn: document.getElementById("tiltFallbackBtn"),
+      tiltTutorialOverlay: document.getElementById("tiltTutorialOverlay"),
+      tiltTutorialStartBtn: document.getElementById("tiltTutorialStartBtn"),
+      countdownOverlay: document.getElementById("countdownOverlay"),
+      countdownNumber: document.getElementById("countdownNumber"),
+      countdownHint: document.getElementById("countdownHint"),
+      countdownSubhint: document.getElementById("countdownSubhint")
     };
 
     function normalizeVocab(rows) {
@@ -1509,6 +1730,9 @@
       if (!next) return;
       if (screenId !== "screen-game") {
         closeTiltOverlay();
+        closeTiltTutorial();
+        unlockTiltOrientation();
+        el.gameLayout.classList.remove("tilt-landscape");
       }
       if (current) current.classList.add("leaving-left");
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
@@ -1605,24 +1829,51 @@
       goTo("screen-game");
       el.pauseOverlay.classList.remove("visible");
       el.switchTeamBtn.style.display = appState.game.config.key === "battle" ? "inline-flex" : "none";
+      el.gameLayout.classList.toggle("tilt-landscape", appState.game.controlMode === "tilt");
+      el.gameLayout.classList.remove("show-hints");
       syncControlModeUI();
     }
 
     function launchGame() {
       prepareGameScreen();
-      el.toggleHintsBtn.textContent = "Hide Hints";
+      appState.hintVisible = appState.game.controlMode === "tilt" ? false : true;
+      syncHintUI();
       nextCard(true);
       updateHud();
-      clearInterval(appState.game.interval);
-      appState.game.interval = setInterval(tick, 1000);
       burstParticles(0.5);
       if (appState.game.controlMode === "tilt") {
         setTiltState("Tilt ready");
+        lockTiltOrientation();
+        if (appState.tilt.tutorialSeen) {
+          startTiltCountdown();
+        } else {
+          appState.game.paused = true;
+          openTiltTutorial();
+          setTiltState("Learn the gestures");
+        }
       } else {
         stopTiltListener();
         appState.tilt.enabled = false;
         setTiltState("Tap controls");
+        unlockTiltOrientation();
+        startRoundTimer();
       }
+    }
+
+    function syncHintUI() {
+      const clues = document.querySelector(".clue-panel");
+      const isTilt = appState.game && appState.game.controlMode === "tilt";
+      if (clues) clues.style.display = appState.hintVisible ? "grid" : "none";
+      el.gameLayout.classList.toggle("show-hints", Boolean(isTilt && appState.hintVisible));
+      el.toggleHintsBtn.textContent = isTilt
+        ? (appState.hintVisible ? "Hide Hints" : "Reveal Hints")
+        : (appState.hintVisible ? "Hide Hints" : "Show Hints");
+    }
+
+    function startRoundTimer() {
+      if (!appState.game) return;
+      clearInterval(appState.game.interval);
+      appState.game.interval = setInterval(tick, 1000);
     }
 
     function tick() {
@@ -1674,8 +1925,7 @@
       el.meaningText.textContent = card.meaning;
       el.exampleText.textContent = card.example;
       el.synonymText.textContent = card.nearby;
-      const clues = document.querySelector(".clue-panel");
-      clues.style.display = appState.hintVisible ? "grid" : "none";
+      syncHintUI();
       if (!initial) burstParticles(0.22);
     }
 
@@ -1746,8 +1996,17 @@
       const g = appState.game;
       if (!g) return;
       clearInterval(g.interval);
+      clearInterval(appState.tilt.countdownTimer);
+      appState.tilt.countdownActive = false;
+      el.countdownOverlay.classList.remove("visible");
+      closeTiltTutorial();
       stopTiltListener();
       appState.tilt.enabled = false;
+      unlockTiltOrientation();
+      el.gameLayout.classList.remove("tilt-landscape");
+      el.gameLayout.classList.remove("show-hints");
+      appState.hintVisible = true;
+      appState.game = null;
       const finalScore = g.config.key === "battle" ? Math.max(...g.teams) : g.score;
       const winnerName = g.config.key === "battle"
         ? g.teams[0] === g.teams[1] ? "Tie Match" : `Team ${g.teams[0] > g.teams[1] ? 1 : 2}`
@@ -1789,6 +2048,11 @@
     function pauseGame() {
       if (!appState.game) return;
       appState.game.paused = true;
+      clearInterval(appState.game.interval);
+      if (appState.game.controlMode === "tilt") {
+        appState.hintVisible = true;
+        syncHintUI();
+      }
       el.pauseOverlay.classList.add("visible");
     }
 
@@ -1796,10 +2060,20 @@
       if (!appState.game) return;
       appState.game.paused = false;
       el.pauseOverlay.classList.remove("visible");
+      if (appState.game.controlMode === "tilt") {
+        appState.hintVisible = false;
+        syncHintUI();
+      }
+      if (!appState.tilt.countdownActive) startRoundTimer();
     }
 
     function restartGame() {
       if (!appState.game) return;
+      clearInterval(appState.tilt.countdownTimer);
+      appState.tilt.countdownActive = false;
+      el.countdownOverlay.classList.remove("visible");
+      closeTiltTutorial();
+      unlockTiltOrientation();
       startGame();
       showToast("เริ่มรอบใหม่แล้ว");
     }
@@ -1814,8 +2088,7 @@
 
     function toggleHints() {
       appState.hintVisible = !appState.hintVisible;
-      document.querySelector(".clue-panel").style.display = appState.hintVisible ? "grid" : "none";
-      el.toggleHintsBtn.textContent = appState.hintVisible ? "Hide Hints" : "Show Hints";
+      syncHintUI();
     }
 
     function renderBrowser(query = "") {
@@ -1912,6 +2185,7 @@
       el.searchInput.addEventListener("input", () => renderBrowser(el.searchInput.value));
       [el.customTime, el.customRounds, el.customLives].forEach(input => input.addEventListener("input", syncCustomOutputs));
       document.getElementById("themeToggle").addEventListener("click", cycleTheme);
+      el.fullscreenBtn.addEventListener("click", toggleFullscreen);
       document.querySelectorAll("[data-control-mode]").forEach(btn => {
         btn.addEventListener("click", () => {
           appState.controlMode = btn.dataset.controlMode;
@@ -1919,10 +2193,18 @@
         });
       });
       el.tiltEnableBtn.addEventListener("click", enableTiltAndStart);
+      el.tiltTutorialStartBtn.addEventListener("click", () => {
+        closeTiltTutorial();
+        appState.tilt.tutorialSeen = true;
+        localStorage.setItem("isan-glass-tilt-tutorial-seen", "1");
+        startTiltCountdown();
+      });
       el.tiltFallbackBtn.addEventListener("click", () => {
         appState.controlMode = "tap";
         syncControlModeUI();
         closeTiltOverlay();
+        closeTiltTutorial();
+        unlockTiltOrientation();
         showToast("สลับเป็น Tap Mode");
         if (appState.game) {
           appState.game.controlMode = "tap";
@@ -2165,8 +2447,9 @@
       const hideActionButtons = appState.game && appState.game.controlMode === "tilt";
       document.getElementById("correctBtn").style.display = hideActionButtons ? "none" : "";
       document.getElementById("skipBtn").style.display = hideActionButtons ? "none" : "";
-      document.getElementById("wrongBtn").style.display = "";
+      document.getElementById("wrongBtn").style.display = hideActionButtons ? "none" : "";
       el.tiltState.classList.toggle("hidden", !(appState.game && appState.game.controlMode === "tilt"));
+      el.fullscreenBtn.classList.toggle("hidden", !(appState.game && appState.game.controlMode === "tilt"));
     }
 
     function openTiltOverlay() {
@@ -2182,9 +2465,76 @@
       el.tiltOverlay.classList.remove("visible");
     }
 
+    function openTiltTutorial() {
+      el.tiltTutorialOverlay.classList.add("visible");
+    }
+
+    function closeTiltTutorial() {
+      el.tiltTutorialOverlay.classList.remove("visible");
+    }
+
     function setTiltState(text) {
       appState.tilt.stateText = text;
       el.tiltStateText.textContent = text;
+    }
+
+    function startTiltCountdown() {
+      clearInterval(appState.game.interval);
+      clearInterval(appState.tilt.countdownTimer);
+      appState.tilt.countdownActive = true;
+      appState.game.paused = true;
+      let count = 3;
+      el.countdownNumber.textContent = count;
+      el.countdownHint.textContent = "เตรียมถือเครื่องให้เพื่อนเห็นคำ แล้วเกมจะเริ่มเองทันที";
+      el.countdownSubhint.textContent = "คว่ำ = ถูก • เงย = ข้าม • เอียงซ้าย/ขวา = ผิด";
+      el.countdownOverlay.classList.add("visible");
+      setTiltState("Turn screen to your friends");
+      appState.tilt.countdownTimer = setInterval(() => {
+        count -= 1;
+        if (count > 0) {
+          el.countdownNumber.textContent = count;
+          return;
+        }
+        clearInterval(appState.tilt.countdownTimer);
+        el.countdownNumber.textContent = "Go";
+        el.countdownHint.textContent = "คว่ำเครื่อง = ถูก • เงยเครื่อง = ข้าม";
+        el.countdownSubhint.textContent = "เอียงซ้ายหรือขวาแรงพอ = ผิด";
+        setTiltState("Tilt live");
+        setTimeout(() => {
+          el.countdownOverlay.classList.remove("visible");
+          appState.tilt.countdownActive = false;
+          if (appState.game) {
+            appState.game.paused = false;
+            startRoundTimer();
+          }
+        }, 700);
+      }, 1000);
+    }
+
+    async function toggleFullscreen() {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+          showToast("เข้าสู่โหมดเต็มจอ");
+        } else {
+          await document.exitFullscreen();
+          showToast("ออกจากโหมดเต็มจอ");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("เบราว์เซอร์นี้ไม่อนุญาตให้เข้าเต็มจอ");
+      }
+    }
+
+    async function enterFullscreenSilently() {
+      if (document.fullscreenElement) return true;
+      try {
+        await document.documentElement.requestFullscreen();
+        return true;
+      } catch (err) {
+        console.debug("Auto fullscreen unavailable", err);
+        return false;
+      }
     }
 
     async function enableTiltAndStart() {
@@ -2201,6 +2551,7 @@
       appState.tilt.baselineBeta = null;
       setTiltState("Calibrating...");
       startTiltListener();
+      await enterFullscreenSilently();
       closeTiltOverlay();
       launchGame();
       showToast("Tilt Mode พร้อมเล่น");
@@ -2235,6 +2586,7 @@
     function onDeviceOrientation(event) {
       if (!appState.game || appState.game.controlMode !== "tilt" || appState.game.paused) return;
       const beta = typeof event.beta === "number" ? event.beta : null;
+      const gamma = typeof event.gamma === "number" ? event.gamma : null;
       if (beta == null) return;
       if (appState.tilt.baselineBeta == null) {
         appState.tilt.baselineBeta = beta;
@@ -2244,7 +2596,11 @@
       const delta = beta - appState.tilt.baselineBeta;
       const now = Date.now();
       if (now - appState.tilt.lastActionAt < 1200) return;
-      if (delta < -28) {
+      if (gamma != null && Math.abs(gamma) > 34) {
+        appState.tilt.lastActionAt = now;
+        setTiltState("Wrong tilt");
+        handleAnswer("wrong");
+      } else if (delta < -28) {
         appState.tilt.lastActionAt = now;
         setTiltState("Skip tilt");
         handleAnswer("skip");
@@ -2254,6 +2610,26 @@
         handleAnswer("correct");
       } else if (Math.abs(delta) < 10) {
         setTiltState("Hold steady");
+      }
+    }
+
+    async function lockTiltOrientation() {
+      try {
+        if (screen.orientation && screen.orientation.lock && window.matchMedia("(pointer: coarse)").matches) {
+          await screen.orientation.lock("landscape");
+        }
+      } catch (err) {
+        console.debug("Orientation lock unavailable", err);
+      }
+    }
+
+    async function unlockTiltOrientation() {
+      try {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      } catch (err) {
+        console.debug("Orientation unlock unavailable", err);
       }
     }
 
