@@ -578,6 +578,33 @@
       border-radius: var(--radius-lg);
     }
 
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .choice-card {
+      position: relative;
+      text-align: left;
+      padding: 18px;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: transform .24s var(--ease-ios), box-shadow .24s ease, border-color .24s ease;
+    }
+
+    .choice-card.active {
+      border-color: rgba(84,212,255,0.52);
+      box-shadow: 0 0 0 1px rgba(84,212,255,0.22), 0 20px 40px rgba(47,123,255,0.18);
+    }
+
+    .choice-card p {
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.45;
+    }
+
     .slider-group {
       display: grid;
       gap: 16px;
@@ -825,6 +852,25 @@
       overflow: hidden;
     }
 
+    .tilt-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.1);
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .tilt-orb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, var(--cyan), var(--blue));
+      box-shadow: 0 0 18px rgba(84, 212, 255, 0.8);
+    }
+
     @keyframes modalPop {
       to { transform: scale(1); }
     }
@@ -993,6 +1039,7 @@
     @media (max-width: 960px) {
       .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .config-panel, .results-grid { grid-template-columns: 1fr; }
+      .choice-grid { grid-template-columns: 1fr; }
       .hud { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .clue-grid { grid-template-columns: 1fr; }
@@ -1124,6 +1171,17 @@
               <div class="panel glass">
                 <h3>Ready to Launch</h3>
                 <p class="hint" style="margin-top:8px;">คำศัพท์จะถูกสุ่มแบบไม่ซ้ำในแต่ละเกม ถ้าเบราว์เซอร์ไม่ยอมอ่านไฟล์อัตโนมัติ คุณยัง import ไฟล์ใหม่เข้าแทนฐานข้อมูลเดิมได้เสมอ</p>
+                <div class="choice-grid" id="controlModeGrid">
+                  <button class="choice-card glass active" type="button" data-control-mode="tap">
+                    <h3>Tap Mode</h3>
+                    <p>กดปุ่ม Correct / Wrong / Skip เหมาะกับเดสก์ท็อปและเกมที่อยากคุมแม่นๆ</p>
+                  </button>
+                  <button class="choice-card glass" type="button" data-control-mode="tilt">
+                    <h3>Tilt Mode</h3>
+                    <p>คว่ำเครื่อง = ถูก เงยเครื่อง = ข้าม ฟีลปาร์ตี้แบบ ChaYen บนมือถือ</p>
+                  </button>
+                </div>
+                <p class="hint" id="controlModeHint" style="margin-top:12px;">ตอนนี้ใช้ Tap Mode อยู่</p>
                 <div class="actions" style="justify-content:flex-start; margin-top:18px;">
                   <button class="btn primary block" id="startSelectedBtn">Start Selected Mode</button>
                   <button class="btn block" data-nav="home">Back Home</button>
@@ -1167,6 +1225,10 @@
               <div class="left">
                 <button class="btn small" id="toggleHintsBtn">Hide Hints</button>
                 <button class="btn small" id="switchTeamBtn">Switch Team</button>
+                <div class="tilt-state hidden" id="tiltState">
+                  <span class="tilt-orb"></span>
+                  <span id="tiltStateText">Tilt standby</span>
+                </div>
               </div>
               <div class="right">
                 <button class="btn warn block-mobile" id="skipBtn">Skip</button>
@@ -1268,6 +1330,19 @@
     </div>
   </div>
 
+  <div class="overlay" id="tiltOverlay">
+    <div class="overlay-card glass">
+      <div class="shine"></div>
+      <div class="capsule" style="width:max-content;">Tilt Mode</div>
+      <h2>ถือเครื่องให้ตรงก่อนเริ่ม</h2>
+      <p class="hint" id="tiltOverlayText">ระบบจะขอสิทธิ์เซนเซอร์ จากนั้นให้ถือเครื่องแนวตั้งปกติ 1 จังหวะเพื่อ calibrate แล้วเล่นได้เลย</p>
+      <div class="actions" style="justify-content:flex-start;">
+        <button class="btn primary" id="tiltEnableBtn">Enable Tilt</button>
+        <button class="btn" id="tiltFallbackBtn">Use Tap Instead</button>
+      </div>
+    </div>
+  </div>
+
   <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" class="hidden" />
 
   <script>
@@ -1285,10 +1360,20 @@
       theme: "auto",
       vocab: normalizeVocab(EMBEDDED_VOCAB),
       selectedMode: "classic",
+      controlMode: "tap",
       currentScreen: "screen-splash",
       hintVisible: true,
       game: null,
-      stats: loadStats()
+      stats: loadStats(),
+      tilt: {
+        enabled: false,
+        supported: typeof window !== "undefined" && ("DeviceOrientationEvent" in window),
+        listening: false,
+        baselineBeta: null,
+        lastActionAt: 0,
+        stateText: "Tilt standby",
+        permissionRequested: false
+      }
     };
 
     const el = {
@@ -1308,6 +1393,7 @@
       customTimeOut: document.getElementById("customTimeOut"),
       customRoundsOut: document.getElementById("customRoundsOut"),
       customLivesOut: document.getElementById("customLivesOut"),
+      controlModeHint: document.getElementById("controlModeHint"),
       wordCard: document.getElementById("wordCard"),
       wordTitle: document.getElementById("wordTitle"),
       pronunciationPill: document.getElementById("pronunciationPill"),
@@ -1339,7 +1425,13 @@
       winnerMode: document.getElementById("winnerMode"),
       winnerWords: document.getElementById("winnerWords"),
       switchTeamBtn: document.getElementById("switchTeamBtn"),
-      toggleHintsBtn: document.getElementById("toggleHintsBtn")
+      toggleHintsBtn: document.getElementById("toggleHintsBtn"),
+      tiltState: document.getElementById("tiltState"),
+      tiltStateText: document.getElementById("tiltStateText"),
+      tiltOverlay: document.getElementById("tiltOverlay"),
+      tiltOverlayText: document.getElementById("tiltOverlayText"),
+      tiltEnableBtn: document.getElementById("tiltEnableBtn"),
+      tiltFallbackBtn: document.getElementById("tiltFallbackBtn")
     };
 
     function normalizeVocab(rows) {
@@ -1415,6 +1507,9 @@
       const current = screenById(appState.currentScreen);
       const next = screenById(screenId);
       if (!next) return;
+      if (screenId !== "screen-game") {
+        closeTiltOverlay();
+      }
       if (current) current.classList.add("leaving-left");
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
       next.classList.add("active");
@@ -1464,8 +1559,10 @@
     function createGameState() {
       const config = getModeConfig();
       const deck = shuffle(appState.vocab);
+      const controlMode = appState.controlMode === "tilt" && !appState.tilt.supported ? "tap" : appState.controlMode;
       return {
         config,
+        controlMode,
         deck,
         index: 0,
         timer: config.time,
@@ -1489,16 +1586,43 @@
         showToast("ยังไม่มีคำศัพท์ให้เล่น ลอง import ไฟล์ก่อน");
         return;
       }
+      if (appState.controlMode === "tilt" && !appState.tilt.supported) {
+        appState.controlMode = "tap";
+        syncControlModeUI();
+        showToast("อุปกรณ์นี้ไม่รองรับ Tilt Mode ใช้ Tap Mode แทน");
+      }
+      if (appState.controlMode === "tilt" && appState.tilt.supported) {
+        appState.game = createGameState();
+        prepareGameScreen();
+        openTiltOverlay();
+        return;
+      }
       appState.game = createGameState();
+      launchGame();
+    }
+
+    function prepareGameScreen() {
       goTo("screen-game");
       el.pauseOverlay.classList.remove("visible");
       el.switchTeamBtn.style.display = appState.game.config.key === "battle" ? "inline-flex" : "none";
+      syncControlModeUI();
+    }
+
+    function launchGame() {
+      prepareGameScreen();
       el.toggleHintsBtn.textContent = "Hide Hints";
       nextCard(true);
       updateHud();
       clearInterval(appState.game.interval);
       appState.game.interval = setInterval(tick, 1000);
       burstParticles(0.5);
+      if (appState.game.controlMode === "tilt") {
+        setTiltState("Tilt ready");
+      } else {
+        stopTiltListener();
+        appState.tilt.enabled = false;
+        setTiltState("Tap controls");
+      }
     }
 
     function tick() {
@@ -1622,6 +1746,8 @@
       const g = appState.game;
       if (!g) return;
       clearInterval(g.interval);
+      stopTiltListener();
+      appState.tilt.enabled = false;
       const finalScore = g.config.key === "battle" ? Math.max(...g.teams) : g.score;
       const winnerName = g.config.key === "battle"
         ? g.teams[0] === g.teams[1] ? "Tie Match" : `Team ${g.teams[0] > g.teams[1] ? 1 : 2}`
@@ -1786,6 +1912,23 @@
       el.searchInput.addEventListener("input", () => renderBrowser(el.searchInput.value));
       [el.customTime, el.customRounds, el.customLives].forEach(input => input.addEventListener("input", syncCustomOutputs));
       document.getElementById("themeToggle").addEventListener("click", cycleTheme);
+      document.querySelectorAll("[data-control-mode]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          appState.controlMode = btn.dataset.controlMode;
+          syncControlModeUI();
+        });
+      });
+      el.tiltEnableBtn.addEventListener("click", enableTiltAndStart);
+      el.tiltFallbackBtn.addEventListener("click", () => {
+        appState.controlMode = "tap";
+        syncControlModeUI();
+        closeTiltOverlay();
+        showToast("สลับเป็น Tap Mode");
+        if (appState.game) {
+          appState.game.controlMode = "tap";
+          launchGame();
+        }
+      });
 
       window.addEventListener("keydown", e => {
         if (appState.currentScreen !== "screen-game" || !appState.game) return;
@@ -2011,6 +2154,109 @@
       FX.addBurst(kind === "success" ? 28 : 18, color, kind === "success" ? 1 : 0.7);
     }
 
+    function syncControlModeUI() {
+      document.querySelectorAll("[data-control-mode]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.controlMode === appState.controlMode);
+      });
+      const isTilt = appState.controlMode === "tilt";
+      el.controlModeHint.textContent = isTilt
+        ? (appState.tilt.supported ? "ตอนนี้ใช้ Tilt Mode อยู่" : "อุปกรณ์นี้ไม่รองรับ Tilt Mode จะ fallback เป็น Tap เมื่อเริ่มเกม")
+        : "ตอนนี้ใช้ Tap Mode อยู่";
+      const hideActionButtons = appState.game && appState.game.controlMode === "tilt";
+      document.getElementById("correctBtn").style.display = hideActionButtons ? "none" : "";
+      document.getElementById("skipBtn").style.display = hideActionButtons ? "none" : "";
+      document.getElementById("wrongBtn").style.display = "";
+      el.tiltState.classList.toggle("hidden", !(appState.game && appState.game.controlMode === "tilt"));
+    }
+
+    function openTiltOverlay() {
+      el.tiltOverlay.classList.add("visible");
+      el.tiltOverlayText.textContent = appState.tilt.supported
+        ? "ระบบจะขอสิทธิ์เซนเซอร์ จากนั้นให้ถือเครื่องแนวตั้งปกติ 1 จังหวะเพื่อ calibrate แล้วเล่นได้เลย"
+        : "เบราว์เซอร์หรืออุปกรณ์นี้ไม่รองรับเซนเซอร์ท่าทาง แนะนำใช้ Tap Mode แทน";
+      el.tiltEnableBtn.disabled = !appState.tilt.supported;
+      el.tiltEnableBtn.style.opacity = appState.tilt.supported ? "1" : ".5";
+    }
+
+    function closeTiltOverlay() {
+      el.tiltOverlay.classList.remove("visible");
+    }
+
+    function setTiltState(text) {
+      appState.tilt.stateText = text;
+      el.tiltStateText.textContent = text;
+    }
+
+    async function enableTiltAndStart() {
+      if (!appState.tilt.supported) {
+        showToast("อุปกรณ์นี้ไม่รองรับ Tilt Mode");
+        return;
+      }
+      const granted = await requestTiltPermission();
+      if (!granted) {
+        showToast("ไม่ได้รับสิทธิ์เซนเซอร์ ใช้ Tap Mode แทนได้");
+        return;
+      }
+      appState.tilt.enabled = true;
+      appState.tilt.baselineBeta = null;
+      setTiltState("Calibrating...");
+      startTiltListener();
+      closeTiltOverlay();
+      launchGame();
+      showToast("Tilt Mode พร้อมเล่น");
+    }
+
+    async function requestTiltPermission() {
+      try {
+        if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+          const state = await DeviceOrientationEvent.requestPermission();
+          appState.tilt.permissionRequested = true;
+          return state === "granted";
+        }
+        return true;
+      } catch (err) {
+        console.error(err);
+        return false;
+      }
+    }
+
+    function startTiltListener() {
+      if (appState.tilt.listening) return;
+      window.addEventListener("deviceorientation", onDeviceOrientation);
+      appState.tilt.listening = true;
+    }
+
+    function stopTiltListener() {
+      if (!appState.tilt.listening) return;
+      window.removeEventListener("deviceorientation", onDeviceOrientation);
+      appState.tilt.listening = false;
+    }
+
+    function onDeviceOrientation(event) {
+      if (!appState.game || appState.game.controlMode !== "tilt" || appState.game.paused) return;
+      const beta = typeof event.beta === "number" ? event.beta : null;
+      if (beta == null) return;
+      if (appState.tilt.baselineBeta == null) {
+        appState.tilt.baselineBeta = beta;
+        setTiltState("Tilt calibrated");
+        return;
+      }
+      const delta = beta - appState.tilt.baselineBeta;
+      const now = Date.now();
+      if (now - appState.tilt.lastActionAt < 1200) return;
+      if (delta < -28) {
+        appState.tilt.lastActionAt = now;
+        setTiltState("Skip tilt");
+        handleAnswer("skip");
+      } else if (delta > 28) {
+        appState.tilt.lastActionAt = now;
+        setTiltState("Correct tilt");
+        handleAnswer("correct");
+      } else if (Math.abs(delta) < 10) {
+        setTiltState("Hold steady");
+      }
+    }
+
     function init() {
       const savedTheme = localStorage.getItem("isan-glass-theme");
       if (savedTheme) appState.theme = savedTheme;
@@ -2020,6 +2266,7 @@
       buildModeCards();
       renderBrowser();
       bindButtons();
+      syncControlModeUI();
       pointerLighting();
       tiltCards();
       initBackgroundParticles();
