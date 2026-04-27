@@ -812,6 +812,13 @@
       overflow: hidden;
       transition: transform .36s var(--ease-ios), filter .36s ease, opacity .3s ease;
       transform-style: preserve-3d;
+      touch-action: manipulation;
+    }
+
+    .game-layout.tilt-landscape .word-card {
+      touch-action: none;
+      overscroll-behavior: none;
+      user-select: none;
     }
 
     .word-card.entering { animation: cardIn .55s var(--ease-ios); }
@@ -2544,6 +2551,7 @@
     function startTiltListener() {
       if (appState.tilt.listening) return;
       el.wordCard.addEventListener("pointerdown", onSwipeStart);
+      el.wordCard.addEventListener("pointermove", onSwipeMove);
       el.wordCard.addEventListener("pointerup", onSwipeEnd);
       el.wordCard.addEventListener("pointercancel", onSwipeCancel);
       appState.tilt.listening = true;
@@ -2552,6 +2560,7 @@
     function stopTiltListener() {
       if (!appState.tilt.listening) return;
       el.wordCard.removeEventListener("pointerdown", onSwipeStart);
+      el.wordCard.removeEventListener("pointermove", onSwipeMove);
       el.wordCard.removeEventListener("pointerup", onSwipeEnd);
       el.wordCard.removeEventListener("pointercancel", onSwipeCancel);
       appState.tilt.listening = false;
@@ -2566,6 +2575,11 @@
 
     function onSwipeCancel() {
       appState.tilt.swipeTracking = false;
+    }
+
+    function onSwipeMove(event) {
+      if (!appState.game || appState.game.controlMode !== "tilt" || !appState.tilt.swipeTracking) return;
+      event.preventDefault();
     }
 
     function onSwipeEnd(event) {
